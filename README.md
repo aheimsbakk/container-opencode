@@ -27,7 +27,7 @@ podman build -t opencode:latest .
 Start the container with this command:
 
 ```bash
-podman run --rm -ti -u $UID -v opencode:/home/opencode -v $PWD:/work opencode:latest
+podman run --rm --userns=keep-id -ti -v opencode:/home/opencode -v $PWD:/work opencode:latest
 ```
 
 Quick reference for the flags:
