@@ -7,7 +7,7 @@ Location & filename pattern
 - Store worklogs under: `agent/worklogs/`
 - File name pattern: `agent/worklogs/YYYY-MM-DD-very-short-description.md`
   - Example: `agent/worklogs/2026-02-13-fix-readme-typos.md`
-  - If multiple logs on the same day, append `-01`, `-02`, etc.
+  - If multiple logs on the same day, ensure to update very-short-description so we don't get collitons, etc.
 
 Worklog structure (minimal and required)
 - The repository enforces a minimal, privacy-preserving worklog front matter. Worklogs MUST include a YAML front-matter block containing exactly the keys listed below and no additional keys.

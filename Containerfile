@@ -83,4 +83,4 @@ WORKDIR /work
 VOLUME ["/work", "/home/opencode"]
 
 ENTRYPOINT ["/usr/local/bin/container-init.sh"]
-CMD ["/usr/bin/opencode-cli --mdns"]
+CMD ["/usr/bin/opencode-cli"]
