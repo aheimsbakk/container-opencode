@@ -32,12 +32,16 @@ podman run --rm --userns=keep-id -ti -v opencode:/home/opencode -v $PWD:/work -v
 
 If you start the container often, add a small shell alias to your `~/.bashrc` or `~/.profile` so you don't have to remember the full command. For example:
 
-```bash
-# Add to ~/.bashrc
-alias opencode-run='podman run --rm --userns=keep-id -ti -v opencode:/home/opencode -v "$PWD":/work -v "$HOME"/.gitconfig:/home/opencode/.gitconfig opencode:latest'
-
-# Then reload your shell or run: source ~/.bashrc
-```
+- Add to alias to `~/.bashrc`
+  ```bash
+  cat <<EOF >> ~/.bashrc
+  alias oc='podman run --rm --userns=keep-id -ti -v opencode:/home/opencode -v "\$PWD":/work -v "\$HOME"/.gitconfig:/home/opencode/.gitconfig opencode:latest'
+  EOF
+  ```
+- Then reload your shell or run
+  ```bash
+  source ~/.bashrc
+  ```
 
 Quick reference for the flags:
 - `--rm`: remove the container when it exits.
@@ -45,6 +49,13 @@ Quick reference for the flags:
 - `-u $UID`: run as your current user so files created in the container have correct ownership on the host.
 - `-v opencode:/home/opencode`: use a named volume to persist OpenCode home data between sessions.
 - `-v $PWD:/work`: mount your current directory into the container at `/work` so you can edit files from the host.
+Quick reference for the flags used in the example and alias:
+- `--rm`: remove the container when it exits.
+- `--userns=keep-id`: map the container user to your host user (keeps file ownership sane).
+- `-ti`: allocate a TTY and run an interactive terminal session.
+- `-v opencode:/home/opencode`: use a named volume to persist OpenCode home data between sessions.
+- `-v "$PWD":/work`: mount your current directory into the container at `/work` so edits are visible on the host. The alias uses the same `$PWD` mount.
+- `-v "$HOME"/.gitconfig:/home/opencode/.gitconfig`: share your host git configuration into the container so git identity and settings are preserved.
 
 ## Security notes
 
