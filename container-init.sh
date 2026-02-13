@@ -13,10 +13,12 @@ if [ "${1#-}" != "$1" ]; then
 	set -- /bin/bash "$@"
 fi
 
-cat <<EOF > $HOME/.gitconfig
+if [ ! -f "$HOME/.gitconfig" ]; then
+	cat <<EOF > $HOME/.gitconfig
 [safe]
 	directory = /work
 EOF
+fi
 
 # Dette kjører kommandoen som ble gitt til containeren (default: /bin/bash)
 exec "$@"
