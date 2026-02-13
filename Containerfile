@@ -1,8 +1,8 @@
+FROM docker.io/library/debian:stable-backports
+
 LABEL maintainer="Arnulf Heimsbakk <arnulf.heimsbakk@gmail.com>"
 LABEL description="Sikkert arbeidsmiljø for opencode med utviklerverktøy"
 LABEL version="1.0"
-
-FROM docker.io/library/debian:stable-backports
 
 ARG OPENCODE_VERSION="latest"
 
