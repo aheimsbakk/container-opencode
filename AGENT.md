@@ -9,74 +9,63 @@ Location & filename pattern
   - Example: `agent/worklogs/2026-02-13-fix-readme-typos.md`
   - If multiple logs on the same day, append `-01`, `-02`, etc.
 
-Worklog structure
-- Each worklog MUST start with a YAML front matter block containing at minimum the keys below.
-- Required front matter keys:
-  - `date`: ISO 8601 timestamp (UTC, include `Z`).
-  - `author`: agent id or human name (e.g., `opencode-agent`).
-  - `who`: the actor who executed the change (agent id or human email/name).
-  - `why`: one-sentence reason for the change.
-  - `what`: one-line summary of what was done.
-  - `status`: one of `planned`, `in-progress`, `completed`.
-  - `model`: model identifier used to produce/assist the change (e.g., `github-copilot/gpt-5-mini`).
-  - `model_version`: model version, tag, or date (e.g., `2026-02-13` or `v1.2.0`).
-- Optional front matter keys: `model_provider`, `commit` (git SHA), `related` (issue/PR), `tags`, `sensitivity`, `model_config`.
+Worklog structure (minimal and required)
+- The repository enforces a minimal, privacy-preserving worklog front matter. Worklogs MUST include a YAML front-matter block containing exactly the keys listed below and no additional keys.
+- Required front matter keys (exact):
+  - `date`: ISO 8601 timestamp (UTC, include `Z`)
+  - `who`: actor who executed the change (agent id or human email/name)
+  - `why`: one-sentence reason for the change
+  - `what`: one-line summary of what was done
+  - `model`: model identifier used to produce/assist the change (e.g., `github-copilot/gpt-5-mini`)
+  - `tags`: list of short tags (e.g., `[docs,workflow]`)
+
+- No other front-matter keys are allowed. Do not record commits, model versions, prompt texts, hashes, or other provenance fields in worklog YAML.
 
 Body
-- The body (below the YAML) should be a short human-readable summary (2–6 lines) describing the change, key files touched, and any follow-ups.
+- The human-readable short summary belongs in the body of the worklog file (below the closing `---`). The body should contain 1–3 short sentences describing the change, key files touched, and any follow-ups.
 
 Template example
 ```yaml
 ---
 date: 2026-02-13T16:27:00Z
-author: opencode-agent
 who: alice@example.com
 why: improve onboarding for non-technical users
 what: rewrite README intro and add security notes
-status: completed
 model: github-copilot/gpt-5-mini
-model_version: 2026-02-13
-model_provider: internal
-commit: <git-sha-here>
 tags: [docs,security]
 ---
 
-Short summary: Updated README to explain the container purpose in plain language, corrected typos, and added build/run instructions. Files changed: README.md. Follow-up: add CI check to enforce worklogs for agent-created commits.
+Updated README to explain the container purpose in plain language, corrected typos, and added build/run instructions. Files changed: README.md. Follow-up: add CI check to enforce worklogs for agent-created commits.
 ```
 
 Agent workflow (required)
-1. Read worklogs in `agent/worklogs/` (newest → oldest) and produce a compact context summary focused on the planned task.
-2. Create a new worklog file `agent/worklogs/YYYY-MM-DD-short.md` with `status: planned` and fill required metadata (including `model` + `model_version`) before making changes.
+1. Read recent worklogs in `agent/worklogs/` (newest → oldest) to build context for the planned task.
+2. Create a new worklog file `agent/worklogs/YYYY-MM-DD-short.md` containing only the required front-matter keys (see above) and a 1–3 sentence body describing the change. Do this before or immediately after making changes.
 3. Perform changes locally or inside the container.
-4. Commit changes. If automated, include human review where policy requires it.
-5. Update the worklog `status` to `completed`, add the `commit` SHA, and write a 2–6 line summary in the body.
-6. Include the compact context summary in the PR description and commit message where applicable.
-
-Compact context guidance
-- Produce a short narrative (5–8 sentences; ~100–200 words) summarizing recent relevant worklogs: purpose, major changes, outstanding items.
-- Only include entries relevant to the current task (configurable N, default 10 most recent).
-- Mention any `status` not equal to `completed` explicitly.
+4. Commit changes. Include the compact context summary in the PR description when appropriate.
+5. Do not add additional provenance data to the worklog file. If external audited provenance is required (commit SHA, model release), store that mapping in an access-controlled audit system outside the repository and reference it in communications, but not in worklogs.
 
 Safety & best practices
 - Never include secrets, API keys, or full prompt texts in worklogs.
-- If a change touches sensitive areas, set `sensitivity: high` in the header and notify a human reviewer.
-- Keep `why` and `what` concise — they enable reliable automated compaction.
+- If a change touches sensitive areas, mark the worklog `tags: [sensitivity_high]` and notify a human reviewer, but do NOT add extra front-matter fields.
+- Keep `why` and `what` concise — they enable reliable human review and automated compaction.
 
-Automation suggestions (recommended)
-- CI check: require a matching worklog for agent-created commits that modify code; validate required front matter keys.
-- Pre-commit hook: prompt creation of a worklog when touching critical directories.
-- Script: `scripts/compact-worklogs.sh` to generate compact context automatically from recent worklogs.
+Validation & enforcement (recommended)
+- Add a CI check that validates worklog YAML: files under `agent/worklogs/*.md` must include exactly the allowed keys (`date`, `who`, `why`, `what`, `model`, `tags`) and a non-empty body with 1–3 short sentences. The CI should fail on new or modified worklogs that violate this rule.
+- Suggested local validator script: `scripts/validate-worklogs.py` (example available in AGENT.md history).
 
-Enforcement & troubleshooting
-- Missing required fields: abort and ask a human to provide them.
-- Duplicate filenames: append numeric suffixes `-01`, `-02`, etc.
-- Use UTC timestamps to avoid timezone confusion.
+Automation suggestions
+- Pre-commit helper: a small script to create a new worklog from a template so authors don't accidentally add forbidden keys.
+- Optional: keep an off-repo audit log for sensitive provenance (commit SHAs, model versions). Reference the audit entry ID off-repo if needed; do not store it in the repo worklogs.
+
+Migration note
+- Historical worklogs that contain extra keys may be kept for audit/history. Configure CI to only enforce the rule on new or modified worklog files to avoid large-scale churn.
 
 FAQ
-- Q: Must the `model` fields be present for all agent changes?
-  - A: Yes — at minimum `model` and `model_version` must be present to record provenance.
+- Q: Must the `model` field be present for all agent changes?
+  - A: Yes — the `model` identifier (model family) must be present in the worklog front-matter. Do not include model versions or other model metadata in the repository worklog.
 
 Where to add this file
 - Save this file as `AGENT.md` at the repository root.
 
-If you want, I will create this file and add a sample worklog next.
+If you want, I can also add the validator script and a CI workflow to enforce these rules — tell me and I will prepare the patch.
