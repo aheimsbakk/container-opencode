@@ -30,6 +30,7 @@ RUN apt-get update && \
       locales \
       man-db \
       openssh-client \
+      pipenv \
       procps \
       rsync \
       tmux \

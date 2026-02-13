@@ -43,10 +43,10 @@ If you start the container often, add a small shell alias to your `~/.bashrc` or
   source ~/.bashrc
   ```
 
-Quick reference for the flags:
+### Quick reference for the flags
+
 - `--rm`: remove the container when it exits.
 - `-ti`: run an interactive terminal session.
-- `-u $UID`: run as your current user so files created in the container have correct ownership on the host.
 - `-v opencode:/home/opencode`: use a named volume to persist OpenCode home data between sessions.
 - `-v $PWD:/work`: mount your current directory into the container at `/work` so you can edit files from the host.
 Quick reference for the flags used in the example and alias:
