@@ -27,7 +27,16 @@ podman build -t opencode:latest .
 Start the container with this command:
 
 ```bash
-podman run --rm --userns=keep-id -ti -v opencode:/home/opencode -v $PWD:/work opencode:latest
+podman run --rm --userns=keep-id -ti -v opencode:/home/opencode -v $PWD:/work -v $HOME/.gitconfig:/home/opencode/.gitconfig opencode:latest
+```
+
+If you start the container often, add a small shell alias to your `~/.bashrc` or `~/.profile` so you don't have to remember the full command. For example:
+
+```bash
+# Add to ~/.bashrc
+alias opencode-run='podman run --rm --userns=keep-id -ti -v opencode:/home/opencode -v "$PWD":/work -v "$HOME"/.gitconfig:/home/opencode/.gitconfig opencode:latest'
+
+# Then reload your shell or run: source ~/.bashrc
 ```
 
 Quick reference for the flags:
