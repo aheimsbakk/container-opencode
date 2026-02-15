@@ -1,14 +1,33 @@
 #!/bin/bash
 set -e
 
+# NVM verison to use for installing NPM latest
+export NVM_VERSION="v0.40.4"
+
 # Ensure HOME is writable; warn if it is not.
 # This is a best-effort check and may fail if the container runs as a non-root user.
 if [ ! -w "$HOME" ]; then
-    echo "WARNING: $HOME is not writable. Some initialization steps may fail."
+    echo "WARNING: $HOME is not writable. Exiting."
+    exit 1
 fi
 
 # Copy default skel files into the user's home without overwriting newer files.
 rsync -ur /etc/skel/. "$HOME"/
+
+# Download and install NVM, and fetch NPM LTS
+if [ ! -d "$HOME/.nvm" ]; then
+    echo "=== Downloading NVM ${NVM_VERSION}"
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_VERSION}/install.sh | PROFILE="${HOME}/.bashrc" bash
+
+    echo "=== Loading NVM"
+    export NVM_DIR="$HOME/.nvm"
+    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+    [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+    echo "=== Install NPM LTS"
+    nvm install --lts
+    nvm use --lts
+fi
 
 # If the first argument starts with a dash (e.g. -c), treat it as an option for bash
 # and prepend /bin/bash so options are passed to the shell.
