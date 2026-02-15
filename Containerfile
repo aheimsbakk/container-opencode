@@ -74,7 +74,7 @@ RUN export VERSION="${OPENCODE_VERSION}" && \
     echo "Downloading: $DOWNLOAD_URL" && \
     curl -sSL "$DOWNLOAD_URL" -o /tmp/opencode.deb && \
     apt-get update && \
-    apt-get -y install /tmp/opencode.deb && \
+    eatmydata apt-get -y install /tmp/opencode.deb && \
     rm /tmp/opencode.deb && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
