@@ -7,7 +7,7 @@ This repository provides a container setup for running OpenCode in a relaxed, "s
 
 ## Build
 ```bash
-podman build -t opencode:latest .
+podman build --no-cache -t opencode:latest .
 ```
 
 ## Usage
