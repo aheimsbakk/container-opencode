@@ -89,4 +89,4 @@ VOLUME ["/work", "/home/opencode"]
 
 # Entrypoint runs container-init.sh which prepares the environment and executes CMD
 ENTRYPOINT ["/usr/local/bin/container-init.sh"]
-CMD ["/usr/bin/opencode-cli"]
+CMD ["bash",  "-l", "-c", "/usr/bin/opencode-cli"]
