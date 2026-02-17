@@ -29,6 +29,14 @@ cat <<EOF >> ~/.bashrc
 alias oc='podman run --rm --userns=keep-id -ti -v opencode:/home/opencode -v "\$PWD":/work -v "\$HOME"/.gitconfig:/home/opencode/.gitconfig opencode:latest'
 EOF
 
+Add a shorthand `ocw` for starting the OpenCode web on port 4096:
+
+```bash
+# Add to ~/.bashrc or ~/.profile
+cat <<EOF >> ~/.bashrc
+alias ocw='podman run --rm --userns=keep-id -t -p 4096:4096 -v opencode:/home/opencode -v "$PWD":/work -v "$HOME"/.gitconfig:/home/opencode/.gitconfig opencode:latest opencode-cli web --hostname 0.0.0.0'
+EOF
+
 # Reload shell
 source ~/.bashrc
 ```
