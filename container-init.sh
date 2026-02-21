@@ -4,6 +4,9 @@ set -e
 # NVM verison to use for installing NPM latest
 export NVM_VERSION="v0.40.4"
 
+# Enable websearch
+export OPENCODE_ENABLE_EXA=1
+
 # Ensure HOME is writable; warn if it is not.
 # This is a best-effort check and may fail if the container runs as a non-root user.
 if [ ! -w "$HOME" ]; then
