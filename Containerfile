@@ -19,6 +19,7 @@ RUN apt-get update && \
     apt-get -y install eatmydata && \
     eatmydata apt-get -y install \
       bash-completion \
+      bc \
       ca-certificates \
       curl \
       gh \
@@ -32,6 +33,7 @@ RUN apt-get update && \
       openssh-client \
       pipenv \
       procps \
+      ripgrep \
       rsync \
       tmux \
       tree \
