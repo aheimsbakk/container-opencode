@@ -38,6 +38,16 @@ fi
 # Instal Python MCP library if we find .mcp
 test -f .mcp && PIPENV_VENV_IN_PROJECT=1 pipenv install mcp~=${MCP_VERSION}
 
+# Default TMUX config
+cat <<EOF > $HOME/.tmux.conf
+set-option -g default-shell /bin/bash
+set -g mouse on
+bind -n C-s set-window-option synchronize-panes
+set -g default-terminal "screen-256color"
+set -ga terminal-overrides ",*:Tc"
+set -ga terminal-overrides ",*:RGB"
+EOF
+
 # If the first argument starts with a dash (e.g. -c), treat it as an option for bash
 # and prepend /bin/bash so options are passed to the shell.
 if [ "${1#-}" != "$1" ]; then
