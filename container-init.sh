@@ -4,6 +4,9 @@ set -e
 # NVM verison to use for installing NPM latest
 export NVM_VERSION="v0.40.4"
 
+# Python MCP server library
+export MCP_VERSION=1.26
+
 # Enable websearch
 export OPENCODE_ENABLE_EXA=1
 
@@ -31,6 +34,9 @@ if [ ! -d "$HOME/.nvm" ]; then
     nvm install --lts
     nvm use --lts
 fi
+
+# Instal Python MCP library if we find .mcp
+test -f .mcp && PIPENV_VENV_IN_PROJECT=1 pipenv install mcp~=${MCP_VERSION}
 
 # If the first argument starts with a dash (e.g. -c), treat it as an option for bash
 # and prepend /bin/bash so options are passed to the shell.

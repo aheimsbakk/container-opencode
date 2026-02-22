@@ -29,10 +29,15 @@ RUN apt-get update && \
       jq \
       less \
       locales \
+      lsof \
       man-db \
       openssh-client \
       pipenv \
       procps \
+      pipenv \
+      python3-pip \
+      python3-wheel \
+      python3-wheel-whl \
       ripgrep \
       rsync \
       tmux \
@@ -42,7 +47,7 @@ RUN apt-get update && \
       zip \
       && \
     apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/*;
 
 # Enable Norwegian and US locales used in the image
 RUN sed -Ei 's/^.*(nb_NO.UTF-8 .*)$/\1/g' /etc/locale.gen && \
