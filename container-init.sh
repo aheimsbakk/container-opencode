@@ -35,11 +35,14 @@ if [ ! -d "$HOME/.nvm" ]; then
     nvm use --lts
 fi
 
+# Installer siste versjon av UV
+test -f $HOME/.local/bin/uv || curl -LsSf https://astral.sh/uv/install.sh | sh
+
 # Instal Python MCP library if we find .mcp
 test -f .mcp && PIPENV_VENV_IN_PROJECT=1 pipenv install mcp~=${MCP_VERSION}
 
 # Default TMUX config
-cat <<EOF > $HOME/.tmux.conf
+test -f $HOME/.tmux.conf || cat <<EOF > $HOME/.tmux.conf
 set-option -g default-shell /bin/bash
 set -g mouse on
 bind -n C-s set-window-option synchronize-panes

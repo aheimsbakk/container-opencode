@@ -86,9 +86,6 @@ RUN export VERSION="${OPENCODE_VERSION}" && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Installer siste versjon av UV
-RUN curl -LsSf https://astral.sh/uv/install.sh | sh
-
 # Copy and make the container entrypoint script executable
 COPY container-init.sh /usr/local/bin/container-init.sh
 RUN chmod +x /usr/local/bin/container-init.sh
