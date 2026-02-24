@@ -24,6 +24,7 @@ RUN apt-get update && \
       curl \
       gh \
       git \
+      nano \
       gnupg \
       iputils-ping \
       jq \
