@@ -13,11 +13,14 @@ export OPENCODE_ENABLE_EXA=1
 # Set editor for subprocesses
 export EDITOR=vim
 
+# Set home folder
+export HOME=/home/opencode
+
 # --- Helper functions ---
 
 install_nvm() {
     echo "=== Downloading NVM ${NVM_VERSION}"
-    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_VERSION}/install.sh | PROFILE="${HOME}/.bashrc" bash
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_VERSION}/install.sh | PROFILE="${HOME}/.profile" bash
 
     echo "=== Loading NVM"
     export NVM_DIR="$HOME/.nvm"
