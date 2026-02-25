@@ -27,6 +27,7 @@ directory or a specified target directory.
 Files downloaded:
   AGENTS.md
   opencode.json
+  update-agents.sh
   agents/  (all files, recursively)
 
 Arguments:
@@ -174,6 +175,7 @@ echo ""
 STATIC_FILES=(
     "AGENTS.md"
     "opencode.json"
+    "update-agents.sh"
 )
 
 # Dynamic: discover all files under agents/
