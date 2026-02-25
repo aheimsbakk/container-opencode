@@ -1,63 +1,58 @@
-1: # Agent Protocol
+# Agent Protocol & Master Rules
 
-2: 
-3: ## 1. Worklogs
+## 0. Operating Modes
+This project is maintained by specialized AI agents and supports two distinct workflows:
 
-4: 
-5: ### 1.1. Granular Worklog (Long-term Memory)
-6: - **Action:** Every change requires a worklog file.
-7: - **Path:** `agents/worklogs/YYYY-MM-DD-HH-mm-{short-desc}.md`
-8:   - **Date and time:** Use `date` command to fetch date and time.
-9: - **Front Matter (Strict):** Must contain ONLY these keys:
-10:   ```yaml
-11:   ---
-12:   when: 2026-02-14T12:00:00Z  # ISO 8601 UTC
-13:   why: one-sentence reason
-14:   what: one-line summary
-15:   model: model-id (e.g. github-copilot/gpt-4)
-16:   tags: [list, of, tags]
-17:   ---
-18:   ```
-19: - **Body:** 1–3 sentences summarizing changes and files touched.
-20: - **Safety:** NO secrets, API keys, or prompt text.
-21: - **Template:** agents/WORKLOG_TEMPLATE.md
-22: - **Validate:** ALWAYS validate the worklog with scripts/validate_worklogs.sh
+**Mode A: The Multi-Agent Workflow (Agentic)**
+Orchestrated by the Project Manager (`pm`). Used for autonomous, multi-step feature development.
+- **Architect:** Plans features, deduces project rules, and updates `BLUEPRINT.md`. Updates or creates `PROJECT_RULES.md` ONLY if new tech-stack conventions require it. NEVER writes code.
+- **Builder:** Implements code strictly according to plans and rules, bumps versions, and writes the worklog. MUST ensure workspace hygiene by updating `.gitignore` before hand-off.
+- **QA:** Runs tests, validates code against `RULES.md` (and `PROJECT_RULES.md` if it exists), and performs the final Git commit using strict file targeting.
 
-23: 
-24: ### 1.2. State Compaction (Short-term Memory)
-25: - **Action:** Immediately after creating a granular log, create or update `agents/CONTEXT.md`.
-26: - **Constraint:** This file MUST stay under 20 lines.
-27: - **Structure:**
-28:     - **Current Goal:** The high-level "vibe" we are chasing right now.
-29:     - **Last 3 Changes:** Bullet points referencing the last 3 worklog filenames.
-30:     - **Next Steps:** The immediate next 2 tactical moves.
+**Mode B: Interactive Copilot (Vibe Mode)**
+Driven by the Vibe Agent (`vibe`). Used for fast, interactive pair-programming directly with the user.
+- Executes changes, tests, and debugging directly.
+- MUST strictly adhere to overarching project rules in `agents/RULES.md`. Compliance with `docs/PROJECT_RULES.md` is MANDATORY if the file exists.
+- MUST update `BLUEPRINT.md`, `CONTEXT.md`, and (if necessary) `docs/PROJECT_RULES.md` to keep the Architect informed for future Agentic workflows.
 
-31: 
-32: ### 1.3. Context Hygiene
-33: - **Rule:** If `agents/CONTEXT.md` exceeds 20 lines, the agent must "garbage collect" by moving older tactical notes into a new worklog and resetting the `agents/CONTEXT.md` to the current priority only.
-34: - **Safety:** Never include raw code snippets or secrets in these files; use descriptive summaries only.
+## 1. Worklogs (Long-term memory)
+- **Responsibility:** The **BUILDER** (Mode A) or **Vibe Agent** (Mode B, upon user wrap-up) must generate the worklog file after finishing the code.
+- **Path:** `docs/worklogs/YYYY-MM-DD-HH-mm-{short-desc}.md`
+- **Date and time:** Use `date` command to fetch date and time.
+- **Front Matter (Strict):** Must contain ONLY these keys:
+  ```yaml
+  ---
+  when: 2026-02-14T12:00:00Z  # ISO 8601 UTC
+  why: one-sentence reason
+  what: one-line summary
+  model: model-id (e.g. github-copilot/gpt-4)
+  tags: [list, of, tags]
+  ---
+  ```
+- **Body:** 1–4 sentences summarizing changes and files touched. NO redundant info.
+- **Safety:** NO secrets, API keys, or prompt text.
+- **Template:** `agents/WORKLOG_TEMPLATE.md`
 
-35: 
-36: ## 2. Workflow
-37: 1. **Context:** Read recent logs in `agents/worklogs/`.
-38: 2. **Create:** Generate the worklog file BEFORE committing.
-39: 3. **Commit:** Push changes + worklog.
-40:    - **Commit message:** Conventional commit message format. 
-41: 4. **Diary (Optional):** If compressing context, append to `DIARY.md`:
-42:    - Header: `## YYYY-MM-DD HH:mm`
-43:    - Content: Bulleted summary of the session.
+## 2. Versioning & Scripts
+- **Responsibility:** The **BUILDER** (Mode A) or **Vibe Agent** (Mode B, upon user wrap-up) must execute version bumping.
+- **Rule:** Every finalized feature/bugfix MUST bump the version.
+  - **Patch (0.0.x):** Bug fixes, refactors
+  - **Minor (0.x.0):** New features, enhancements
+  - **Major (x.0.0):** Breaking changes
+- **Tool:** Run `scripts/bump-version.sh [patch|minor|major]`. 
+- *(If the script does not exist, the agent is authorized to create it).*
+- **Action:** The new version must be mentioned in the worklog body.
 
-44: ## 3. Versioning
-45: - **Rule:** If a file contains `VERSION="x.y.z"`, you MUST update it (SemVer).
-46:   - Patch: Bug fix.
-47:   - Minor: Feature.
-48:   - Major: Breaking change.
-49: - **Action:** Mention the new version in the worklog body.
+## 3. Testing & Validation
+- **Responsibility Split (Mode A):** The **BUILDER** writes tests. The **QA Engineer** executes them.
+- **Responsibility (Mode B):** The **Vibe Agent** handles both writing and running tests interactively.
+- Tests and validation scripts (`scripts/validate-worklog.sh`) must be executed before committing.
+- Test scripts must exit with `0` on success and `>0` on error to avoid unnecessary wait times.
+- If a test fails in Mode A, QA MUST NOT fix the code. QA returns the failure to the PM.
 
-50: ## 4. Enforcement
-51: - Worklogs must validate against the schema above.
-52: - If `scripts/bump-version.sh` exists, use it. Otherwise, update manually.
-53: - Do not create Github Actions, or any CI/CD under `.github`.
-
-
-(End of file - total 56 lines)
+## 4. Committing (End of Workflow)
+- **Pre-Commit Hygiene:** Before any code is handed over to QA or committed by Vibe, the Builder/Vibe MUST ensure all temporary workflow files or caches are added to `.gitignore`.
+- **Responsibility:** The **QA Engineer** (Mode A) or **Vibe Agent** (Mode B, upon user wrap-up) performs the final Git commit ONLY after all tests and validations pass.
+- **Targeted Staging:** They MUST use targeted, explicit staging (`git add <file>`) as defined in their respective prompts. Wildcard staging (`git add .` or `git commit -a`) is strictly forbidden.
+- **Commit message:** Must follow Conventional Commits format and reference the new version.
+- Do not create Github Actions, or any CI/CD under `.github`.
