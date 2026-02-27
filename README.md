@@ -5,13 +5,23 @@
 ## Introduction
 This repository provides a container setup for running OpenCode in a relaxed, "safe-vibe" development environment. It ensures a reproducible workspace while protecting your host system and keeping dependencies isolated.
 
-## Build
+## Prerequisites
+- Podman (rootless recommended). Minimum tested: Podman 4.x.
+- A POSIX shell (bash, zsh).
+- Optional: a ~/.gitconfig file if you plan to share Git identity with the container.
+
+## Quickstart
+Build the image and run a minimal shell session:
+
 ```bash
 podman build --no-cache -t opencode:latest .
+podman run --rm --userns=keep-id -ti -v opencode:/home/opencode -v "$PWD":/work opencode:latest
 ```
 
 ## Usage
-**Run directly:**
+
+Run directly (interactive):
+
 ```bash
 podman run --rm --userns=keep-id -ti \
   -v opencode:/home/opencode \
@@ -20,25 +30,27 @@ podman run --rm --userns=keep-id -ti \
   opencode:latest
 ```
 
-**Setup Alias (Recommended):**
-Add a shorthand `oc` command to your shell profile to avoid typing the full command:
+Setup idempotent aliases (recommended)
+
+The following snippets will append aliases to ~/.bashrc only if they are not already present. They use a single-quoted heredoc to avoid accidental variable expansion at append time.
 
 ```bash
-# Add to ~/.bashrc or ~/.profile
-cat <<EOF >> ~/.bashrc
-alias oc='podman run --hostname vibe --rm --userns=keep-id -ti -v opencode:/home/opencode -v "\$PWD":/work -v "\$HOME"/.gitconfig:/home/opencode/.gitconfig opencode:latest'
+# Add to ~/.bashrc or ~/.profile (idempotent)
+if ! grep -Fxq "alias oc='podman run --hostname vibe --rm --userns=keep-id -ti -v opencode:/home/opencode -v \"\$PWD\":/work -v \"\$HOME\"/.gitconfig:/home/opencode/.gitconfig opencode:latest'" ~/.bashrc 2>/dev/null; then
+  cat <<'EOF' >> ~/.bashrc
+alias oc='podman run --hostname vibe --rm --userns=keep-id -ti -v opencode:/home/opencode -v "$PWD":/work -v "$HOME"/.gitconfig:/home/opencode/.gitconfig opencode:latest'
 EOF
+fi
 
-Add a shorthand `ocw` for starting the OpenCode web on port 4096:
-
-```bash
-# Add to ~/.bashrc or ~/.profile
-cat <<EOF >> ~/.bashrc
+# Add ocw (web) alias if missing
+if ! grep -Fxq "alias ocw='podman run --hostname vibe --rm --userns=keep-id -t -p 4096:4096 -v opencode:/home/opencode -v \"\$PWD\":/work -v \"\$HOME\"/.gitconfig:/home/opencode/.gitconfig opencode:latest opencode-cli web --hostname 0.0.0.0'" ~/.bashrc 2>/dev/null; then
+  cat <<'EOF' >> ~/.bashrc
 alias ocw='podman run --hostname vibe --rm --userns=keep-id -t -p 4096:4096 -v opencode:/home/opencode -v "$PWD":/work -v "$HOME"/.gitconfig:/home/opencode/.gitconfig opencode:latest opencode-cli web --hostname 0.0.0.0'
 EOF
+fi
 
 # Reload shell
-source ~/.bashrc
+source ~/.bashrc || true
 ```
 
 ### Flag Reference
@@ -51,7 +63,14 @@ source ~/.bashrc
 | `-v "$PWD":/work` | Mount current directory to `/work` so edits are visible on the host. |
 | `-v .../.gitconfig` | Share host git configuration (identity/settings) with the container. |
 
+## Troubleshooting
+- If Podman is not found, install Podman for your distribution or use Docker as an alternative (adjust flags). 
+- Permission errors when mounting: ensure rootless Podman is configured, or run with appropriate privileges. Avoid running containers as root unless necessary.
+- If ~/.gitconfig is missing, the -v "$HOME"/.gitconfig mount will fail; either create a gitconfig or remove that mount.
+- Port conflicts for 4096: choose a different host port (`-p HOST:4096`) when running ocw.
+
 ## Security Notes
-* **Limitation:** Containers reduce risk but are not a full security guarantee. Avoid running untrusted code without extra precautions.
-* **Access:** Only directories explicitly mounted are accessible to the agent.
-* **Hardening:** For stricter isolation, consider using SELinux, seccomp, or running inside a dedicated VM.
+- Containers reduce risk but are not a full security guarantee. Avoid running untrusted code without extra precautions.
+- Be cautious when mounting host directories ("-v $PWD:/work"); this gives the container access to those files. Consider read-only mounts when appropriate: `-v "$PWD":/work:ro`.
+- Sharing ~/.gitconfig exposes your git identity; prefer explicit environment variables for credentials and identity where possible.
+- For stricter isolation consider SELinux, seccomp, user namespaces, or running inside a dedicated VM.
