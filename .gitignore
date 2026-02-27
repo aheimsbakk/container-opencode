@@ -1,0 +1,11 @@
+# Workspace hygiene
+.DS_Store
+*.pyc
+__pycache__/
+node_modules/
+dist/
+build/
+*.log
+
+# Ignore temporary shell history
+.bash_history
