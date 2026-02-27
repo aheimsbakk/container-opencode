@@ -15,7 +15,6 @@ Build the image and run a minimal shell session:
 
 ```bash
 podman build --no-cache -t opencode:latest .
-podman run --rm --userns=keep-id -ti -v opencode:/home/opencode -v "$PWD":/work opencode:latest
 ```
 
 ## Usage
