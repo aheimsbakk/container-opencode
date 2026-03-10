@@ -50,7 +50,6 @@ RUN apt-get update && \
       curl \
       gh \
       git \
-      nano \
       gnupg \
       iputils-ping \
       jq \
@@ -58,6 +57,7 @@ RUN apt-get update && \
       locales \
       lsof \
       man-db \
+      nano \
       openssh-client \
       pipenv \
       procps \
@@ -65,6 +65,7 @@ RUN apt-get update && \
       python3-wheel \
       ripgrep \
       rsync \
+      shfmt \
       tmux \
       tree \
       unzip \
