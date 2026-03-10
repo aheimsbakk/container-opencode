@@ -84,5 +84,6 @@ EOF
 fi
 
 # Execute the supplied command (defaults to a shell when no explicit command is given).
-# Run in background and trap signals so CTRL+C (SIGINT/SIGTERM) gracefully stops the process.
-exec "${@:-/bin/bash}"
+# tini (PID 1) forwards SIGINT/SIGTERM to this process so CTRL+C works in both
+# interactive TUI mode and headless web-server mode without a manual trap/wait loop.
+"${@:-/bin/bash}"

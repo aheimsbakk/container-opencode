@@ -78,6 +78,7 @@ RUN apt-get update && \
       ripgrep \
       rsync \
       shfmt \
+      tini \
       tmux \
       tree \
       unzip \
@@ -113,6 +114,9 @@ COPY --chmod=755 container-init.sh /usr/local/bin/container-init.sh
 WORKDIR /work
 VOLUME ["/work", "/home/opencode"]
 
-# Entrypoint runs container-init.sh which prepares the environment and executes CMD
-ENTRYPOINT ["/usr/local/bin/container-init.sh"]
-CMD ["bash", "-l", "-c", "/usr/bin/opencode-cli"]
+# tini acts as PID 1 so SIGINT/SIGTERM (CTRL+C) are properly forwarded to
+# container-init.sh and any child process it exec's (e.g. opencode-cli web).
+# This makes CTRL+C work in both interactive TUI mode and headless web-server mode
+# without needing a manual trap/wait loop inside the init script.
+ENTRYPOINT ["/usr/bin/tini", "-s", "-g", "--", "/usr/local/bin/container-init.sh"]
+CMD ["/usr/bin/opencode-cli"]

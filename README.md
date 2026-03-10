@@ -54,7 +54,7 @@ Setup aliases (replace if changed)
 
 ```bash
 OC="alias oc='podman run --hostname vibe --name opencode --rm --userns=keep-id -ti -v opencode:/home/opencode -v \"\$PWD\":/work -v \"\$HOME\"/.gitconfig:/home/opencode/.gitconfig opencode:latest'"
-OCW="alias ocw='podman run --hostname vibe --name opencode --rm --userns=keep-id -t -p 4096:4096 -v opencode:/home/opencode -v \"\$PWD\":/work -v \"\$HOME\"/.gitconfig:/home/opencode/.gitconfig opencode:latest opencode-cli web --hostname 0.0.0.0'"
+OCW="alias ocw='podman run --hostname vibe --name opencode --rm --userns=keep-id -ti -p 4096:4096 -v opencode:/home/opencode -v \"\$PWD\":/work -v \"\$HOME\"/.gitconfig:/home/opencode/.gitconfig opencode:latest opencode-cli web --hostname 0.0.0.0'"
 grep -q "^alias oc=" ~/.bashrc && sed -i "s|^alias oc=.*|$OC|" ~/.bashrc || echo "$OC" >> ~/.bashrc
 grep -q "^alias ocw=" ~/.bashrc && sed -i "s|^alias ocw=.*|$OCW|" ~/.bashrc || echo "$OCW" >> ~/.bashrc
 source ~/.bashrc
@@ -69,6 +69,11 @@ source ~/.bashrc
 | `-v opencode:/home...` | Persist OpenCode home data in a named volume between sessions. |
 | `-v "$PWD":/work` | Mount current directory to `/work` so edits are visible on the host. |
 | `-v .../.gitconfig` | Share host git configuration (identity/settings) with the container. |
+
+### Signal Handling (CTRL+C)
+`tini` is installed in the image and set as `ENTRYPOINT` PID 1. It properly reaps zombie processes and forwards `SIGINT`/`SIGTERM` to child processes, so **CTRL+C works in both interactive TUI mode and headless web-server mode** without any extra runtime flags.
+
+If you prefer to use the runtime-injected init (equivalent behaviour, no image rebuild required), pass `--init` to `podman run` — but this is redundant when using this image since `tini` is already baked in.
 
 ## Troubleshooting
 - If Podman is not found, install Podman for your distribution or use Docker as an alternative (adjust flags). 
