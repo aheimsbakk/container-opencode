@@ -1,6 +1,14 @@
 # Stage 1: Acquire the opencode .deb package
 # Pass --build-arg INSTALL_SOURCE=local to copy the .deb from the build context
 # instead of downloading from GitHub (avoids API rate limiting).
+
+# Stage 0: Copy in a dummy file if we have no local version
+FROM docker.io/library/debian:stable-backports AS file-check
+WORKDIR /tmp
+# Vi bruker en 'if'-setning i skallet for å lage en dummy-fil hvis den ekte mangler
+RUN --mount=target=/context [ -f /context/opencode-desktop-linux-amd64.deb ] && cp /context/opencode-desktop-linux-amd64.deb . || touch opencode-desktop-linux-amd64.deb
+
+# Stage 1. Download binaries
 FROM docker.io/library/debian:stable-backports AS downloader
 
 ARG OPENCODE_VERSION="latest"
@@ -8,7 +16,7 @@ ARG INSTALL_SOURCE=""
 
 # Always copy the local .deb into the image so it is available regardless of INSTALL_SOURCE.
 # When INSTALL_SOURCE != "local" it will simply be ignored in the next step.
-COPY opencode-desktop-linux-amd64.deb /tmp/opencode-local.deb
+COPY --from=file-check /tmp/opencode-desktop-linux-amd64.deb /tmp/opencode-local.deb
 
 RUN apt-get update && \
     apt-get -y install --no-install-recommends ca-certificates curl jq && \
