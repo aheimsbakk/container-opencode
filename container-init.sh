@@ -69,12 +69,6 @@ set -ga terminal-overrides ",*:Tc"
 set -ga terminal-overrides ",*:RGB"
 EOF
 
-# If the first argument starts with a dash (e.g. -c), treat it as an option for bash
-# and prepend /bin/bash so options are passed to the shell.
-if [ "${1#-}" != "$1" ]; then
-	set -- /bin/bash "$@"
-fi
-
 # Create a minimal .gitconfig with a safe.directory entry if it doesn't already exist.
 if [ ! -f "$HOME/.gitconfig" ]; then
 	cat <<'EOF' >"$HOME/.gitconfig"
@@ -83,7 +77,11 @@ if [ ! -f "$HOME/.gitconfig" ]; then
 EOF
 fi
 
-# Execute the supplied command (defaults to a shell when no explicit command is given).
+# Execute the supplied command via a login shell so that profile/rc files are sourced.
 # tini (PID 1) forwards SIGINT/SIGTERM to this process so CTRL+C works in both
 # interactive TUI mode and headless web-server mode without a manual trap/wait loop.
-"${@:-/bin/bash}"
+if [ $# -eq 0 ]; then
+	exec bash -l
+else
+	exec bash -l -c "$*"
+fi
