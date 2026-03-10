@@ -29,27 +29,14 @@ podman run --rm --userns=keep-id -ti \
   opencode:latest
 ```
 
-Setup idempotent aliases (recommended)
-
-The following snippets will append aliases to ~/.bashrc only if they are not already present. They use a single-quoted heredoc to avoid accidental variable expansion at append time.
+Setup aliases (replace if changed)
 
 ```bash
-# Add to ~/.bashrc or ~/.profile (idempotent)
-if ! grep -Fxq "alias oc='podman run --hostname vibe --rm --userns=keep-id -ti -v opencode:/home/opencode -v \"\$PWD\":/work -v \"\$HOME\"/.gitconfig:/home/opencode/.gitconfig opencode:latest'" ~/.bashrc 2>/dev/null; then
-  cat <<'EOF' >> ~/.bashrc
-alias oc='podman run --hostname vibe --rm --userns=keep-id -ti -v opencode:/home/opencode -v "$PWD":/work -v "$HOME"/.gitconfig:/home/opencode/.gitconfig opencode:latest'
-EOF
-fi
-
-# Add ocw (web) alias if missing
-if ! grep -Fxq "alias ocw='podman run --hostname vibe --rm --userns=keep-id -t -p 4096:4096 -v opencode:/home/opencode -v \"\$PWD\":/work -v \"\$HOME\"/.gitconfig:/home/opencode/.gitconfig opencode:latest opencode-cli web --hostname 0.0.0.0'" ~/.bashrc 2>/dev/null; then
-  cat <<'EOF' >> ~/.bashrc
-alias ocw='podman run --hostname vibe --rm --userns=keep-id -t -p 4096:4096 -v opencode:/home/opencode -v "$PWD":/work -v "$HOME"/.gitconfig:/home/opencode/.gitconfig opencode:latest opencode-cli web --hostname 0.0.0.0'
-EOF
-fi
-
-# Reload shell
-source ~/.bashrc || true
+OC="alias oc='podman run --hostname vibe --name opencode --rm --userns=keep-id -ti -v opencode:/home/opencode -v \"\$PWD\":/work -v \"\$HOME\"/.gitconfig:/home/opencode/.gitconfig opencode:latest'"
+OCW="alias ocw='podman run --hostname vibe --name opencode --rm --userns=keep-id -t -p 4096:4096 -v opencode:/home/opencode -v \"\$PWD\":/work -v \"\$HOME\"/.gitconfig:/home/opencode/.gitconfig opencode:latest opencode-cli web --hostname 0.0.0.0'"
+grep -q "^alias oc=" ~/.bashrc && sed -i "s|^alias oc=.*|$OC|" ~/.bashrc || echo "$OC" >> ~/.bashrc
+grep -q "^alias ocw=" ~/.bashrc && sed -i "s|^alias ocw=.*|$OCW|" ~/.bashrc || echo "$OCW" >> ~/.bashrc
+source ~/.bashrc
 ```
 
 ### Flag Reference
