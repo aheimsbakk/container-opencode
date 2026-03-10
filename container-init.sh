@@ -19,22 +19,23 @@ export HOME=/home/opencode
 # --- Helper functions ---
 
 install_nvm() {
-    echo "=== Downloading NVM ${NVM_VERSION}"
-    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_VERSION}/install.sh | PROFILE="${HOME}/.profile" bash
+	echo "=== Downloading NVM ${NVM_VERSION}"
+	curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_VERSION}/install.sh | PROFILE="${HOME}/.profile" bash
 
-    echo "=== Loading NVM"
-    export NVM_DIR="$HOME/.nvm"
-    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-    [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+	echo "=== Loading NVM"
+	export NVM_DIR="$HOME/.nvm"
+	[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+	[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
 
-    echo "=== Install NPM LTS"
-    nvm install --lts
-    nvm use --lts
+	echo "=== Install NPM LTS"
+	nvm install --lts
+	nvm use --lts
 }
 
 install_if_missing() {
-    local check_path="$1"; shift
-    [[ -f "$check_path" ]] || "$@"
+	local check_path="$1"
+	shift
+	[[ -f "$check_path" ]] || "$@"
 }
 
 # --- Main ---
@@ -42,8 +43,8 @@ install_if_missing() {
 # Ensure HOME is writable; warn if it is not.
 # This is a best-effort check and may fail if the container runs as a non-root user.
 if [ ! -w "$HOME" ]; then
-    echo "WARNING: $HOME is not writable. Exiting."
-    exit 1
+	echo "WARNING: $HOME is not writable. Exiting."
+	exit 1
 fi
 
 # Copy default skel files into the user's home without overwriting newer files.
@@ -59,7 +60,7 @@ install_if_missing "$HOME/.local/bin/uv" curl -LsSf https://astral.sh/uv/install
 test -f .mcp && PIPENV_VENV_IN_PROJECT=1 pipenv install mcp~=${MCP_VERSION}
 
 # Default TMUX config
-test -f $HOME/.tmux.conf || cat <<'EOF' > $HOME/.tmux.conf
+test -f $HOME/.tmux.conf || cat <<'EOF' >$HOME/.tmux.conf
 set-option -g default-shell /bin/bash
 set -g mouse on
 bind -n C-s set-window-option synchronize-panes
@@ -71,12 +72,12 @@ EOF
 # If the first argument starts with a dash (e.g. -c), treat it as an option for bash
 # and prepend /bin/bash so options are passed to the shell.
 if [ "${1#-}" != "$1" ]; then
-    set -- /bin/bash "$@"
+	set -- /bin/bash "$@"
 fi
 
 # Create a minimal .gitconfig with a safe.directory entry if it doesn't already exist.
 if [ ! -f "$HOME/.gitconfig" ]; then
-    cat <<'EOF' > "$HOME/.gitconfig"
+	cat <<'EOF' >"$HOME/.gitconfig"
 [safe]
     directory = /work
 EOF
