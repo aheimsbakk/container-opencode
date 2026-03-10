@@ -84,4 +84,8 @@ EOF
 fi
 
 # Execute the supplied command (defaults to a shell when no explicit command is given).
-exec "${@:-/bin/bash}"
+# Run in background and trap signals so CTRL+C (SIGINT/SIGTERM) gracefully stops the process.
+"${@:-/bin/bash}" &
+CHILD_PID=$!
+trap 'kill -TERM "$CHILD_PID" 2>/dev/null' SIGINT SIGTERM
+wait "$CHILD_PID"
