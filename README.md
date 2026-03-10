@@ -11,11 +11,32 @@ This repository provides a container setup for running OpenCode in a relaxed, "s
 - Optional: a ~/.gitconfig file if you plan to share Git identity with the container.
 
 ## Quickstart
-Build the image and run a minimal shell session:
+
+### Download from GitHub (default)
+Fetches the latest release `.deb` from GitHub at build time:
 
 ```bash
 podman build --no-cache -t opencode:latest .
 ```
+
+### Use a local `.deb` file (avoids GitHub API rate limiting)
+Place the `opencode-desktop-linux-amd64.deb` file in the repository root, then pass `INSTALL_SOURCE=local`:
+
+```bash
+podman build --no-cache --build-arg INSTALL_SOURCE=local -t opencode:latest .
+```
+
+You can also pin to a specific version when downloading from GitHub:
+
+```bash
+podman build --no-cache --build-arg OPENCODE_VERSION=v1.2.3 -t opencode:v1.2.3 .
+```
+
+### Build-arg Reference
+| Argument | Default | Description |
+| :--- | :--- | :--- |
+| `INSTALL_SOURCE` | *(empty)* | Set to `local` to install from a `.deb` in the build context instead of downloading. |
+| `OPENCODE_VERSION` | `latest` | GitHub release tag to download (e.g. `v1.2.3`). Ignored when `INSTALL_SOURCE=local`. |
 
 ## Usage
 

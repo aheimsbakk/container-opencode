@@ -1,28 +1,40 @@
-# Stage 1: Download the opencode .deb package
+# Stage 1: Acquire the opencode .deb package
+# Pass --build-arg INSTALL_SOURCE=local to copy the .deb from the build context
+# instead of downloading from GitHub (avoids API rate limiting).
 FROM docker.io/library/debian:stable-backports AS downloader
 
 ARG OPENCODE_VERSION="latest"
+ARG INSTALL_SOURCE=""
+
+# Always copy the local .deb into the image so it is available regardless of INSTALL_SOURCE.
+# When INSTALL_SOURCE != "local" it will simply be ignored in the next step.
+COPY opencode-desktop-linux-amd64.deb /tmp/opencode-local.deb
 
 RUN apt-get update && \
     apt-get -y install --no-install-recommends ca-certificates curl jq && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-RUN export VERSION="${OPENCODE_VERSION}" && \
-    export REPO="anomalyco/opencode" && \
-    if [ "${VERSION}" = "latest" ]; then \
-        API_URL="https://api.github.com/repos/${REPO}/releases/latest"; \
+RUN if [ "${INSTALL_SOURCE}" = "local" ]; then \
+        echo "Using local .deb from build context" && \
+        cp /tmp/opencode-local.deb /tmp/opencode.deb; \
     else \
-        API_URL="https://api.github.com/repos/${REPO}/releases/tags/${VERSION}"; \
-    fi && \
-    echo "Fetching release metadata from $API_URL" && \
-    DOWNLOAD_URL=$(curl -sSL "${API_URL}" | \
-        jq -r '.assets[] | select(.name | endswith(".deb")) | select(.name | contains("amd64")) | .browser_download_url' | head -n 1) && \
-    if [ -z "$DOWNLOAD_URL" ] || [ "$DOWNLOAD_URL" = "null" ]; then \
-        echo "ERROR: No .deb package found for version ${VERSION}"; exit 1; \
-    fi && \
-    echo "Downloading: $DOWNLOAD_URL" && \
-    curl -sSL "$DOWNLOAD_URL" -o /tmp/opencode.deb
+        export VERSION="${OPENCODE_VERSION}" && \
+        export REPO="anomalyco/opencode" && \
+        if [ "${VERSION}" = "latest" ]; then \
+            API_URL="https://api.github.com/repos/${REPO}/releases/latest"; \
+        else \
+            API_URL="https://api.github.com/repos/${REPO}/releases/tags/${VERSION}"; \
+        fi && \
+        echo "Fetching release metadata from $API_URL" && \
+        DOWNLOAD_URL=$(curl -sSL "${API_URL}" | \
+            jq -r '.assets[] | select(.name | endswith(".deb")) | select(.name | contains("amd64")) | .browser_download_url' | head -n 1) && \
+        if [ -z "$DOWNLOAD_URL" ] || [ "$DOWNLOAD_URL" = "null" ]; then \
+            echo "ERROR: No .deb package found for version ${VERSION}"; exit 1; \
+        fi && \
+        echo "Downloading: $DOWNLOAD_URL" && \
+        curl -sSL "$DOWNLOAD_URL" -o /tmp/opencode.deb; \
+    fi
 
 # Stage 2: Final image
 FROM docker.io/library/debian:stable-backports

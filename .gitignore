@@ -9,3 +9,6 @@ build/
 
 # Ignore temporary shell history
 .bash_history
+
+# Deb
+*.deb
