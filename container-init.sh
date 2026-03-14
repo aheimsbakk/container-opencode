@@ -16,6 +16,9 @@ export EDITOR=vim
 # Set home folder
 export HOME=/home/opencode
 
+# Set color hint
+export TERM=xterm-256color
+
 # --- Helper functions ---
 
 install_nvm() {
