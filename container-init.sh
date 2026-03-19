@@ -19,6 +19,9 @@ export HOME=/home/opencode
 # Set color hint
 export TERM=xterm-256color
 
+# Make light theme work again
+export OPENCODE_EXPERIMENTAL_MARKDOWN=0
+
 # --- Helper functions ---
 
 install_nvm() {
