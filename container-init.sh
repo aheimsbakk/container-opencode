@@ -20,7 +20,7 @@ export HOME=/home/opencode
 export TERM=xterm-256color
 
 # Make light theme work again
-export OPENCODE_EXPERIMENTAL_MARKDOWN=0
+#export OPENCODE_EXPERIMENTAL_MARKDOWN=0
 
 # --- Helper functions ---
 
