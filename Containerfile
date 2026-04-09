@@ -64,10 +64,14 @@ ENV LANG=nb_NO.UTF-8
 ENV HOME=/home/opencode
 ENV PATH="/usr/local/bin:$PATH"
 
-# Install required packages, configure locales, create home dir, and set up shell niceties — all in one layer
+# Copy the pre-downloaded opencode .deb from the downloader stage
+COPY --from=downloader /tmp/opencode.deb /tmp/opencode.deb
+
+# Install required packages + opencode .deb, configure locales, create home dir,
+# and set up shell niceties — all in one layer
 RUN apt-get update && \
-    apt-get -y install eatmydata && \
-    eatmydata apt-get -y install \
+    apt-get -y install --no-install-recommends eatmydata && \
+    eatmydata apt-get -y install --no-install-recommends \
       bash-completion \
       bc \
       ca-certificates \
@@ -96,7 +100,9 @@ RUN apt-get update && \
       unzip \
       vim \
       zip \
+      /tmp/opencode.deb \
       && \
+    rm /tmp/opencode.deb && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
     # Enable Norwegian and US locales
@@ -110,14 +116,6 @@ RUN apt-get update && \
     echo "if [ -f /etc/bash_completion ]; then . /etc/bash_completion; fi" >> /etc/bash.bashrc && \
     echo "alias ls='ls --color=auto'" >> /etc/bash.bashrc && \
     echo "alias grep='grep --color=auto'" >> /etc/bash.bashrc
-
-# Copy the pre-downloaded opencode .deb from the downloader stage and install it
-COPY --from=downloader /tmp/opencode.deb /tmp/opencode.deb
-RUN apt-get update && \
-    eatmydata apt-get -y install /tmp/opencode.deb && \
-    rm /tmp/opencode.deb && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
 
 # Copy and make the container entrypoint script executable
 COPY --chmod=755 container-init.sh /usr/local/bin/container-init.sh
