@@ -5,18 +5,20 @@
 # Stage 0: Copy in a dummy file if we have no local version
 FROM docker.io/library/debian:stable-backports AS file-check
 WORKDIR /tmp
-# Vi bruker en 'if'-setning i skallet for å lage en dummy-fil hvis den ekte mangler
 RUN --mount=target=/context [ -f /context/opencode-desktop-linux-amd64.deb ] && cp /context/opencode-desktop-linux-amd64.deb . || touch opencode-desktop-linux-amd64.deb
+RUN --mount=target=/context [ -f /context/opencode-desktop-linux-arm64.deb ] && cp /context/opencode-desktop-linux-arm64.deb . || touch opencode-desktop-linux-arm64.deb
 
 # Stage 1. Download binaries
 FROM docker.io/library/debian:stable-backports AS downloader
 
 ARG OPENCODE_VERSION="latest"
 ARG INSTALL_SOURCE=""
+ARG TARGETARCH
 
-# Always copy the local .deb into the image so it is available regardless of INSTALL_SOURCE.
-# When INSTALL_SOURCE != "local" it will simply be ignored in the next step.
-COPY --from=file-check /tmp/opencode-desktop-linux-amd64.deb /tmp/opencode-local.deb
+RUN echo "TARGETARCH=${TARGETARCH}"
+
+COPY --from=file-check /tmp/opencode-desktop-linux-amd64.deb /tmp/opencode-desktop-linux-amd64.deb
+COPY --from=file-check /tmp/opencode-desktop-linux-arm64.deb /tmp/opencode-desktop-linux-arm64.deb
 
 RUN apt-get update && \
     apt-get -y install --no-install-recommends ca-certificates curl jq && \
@@ -24,8 +26,9 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 RUN if [ "${INSTALL_SOURCE}" = "local" ]; then \
-        echo "Using local .deb from build context" && \
-        cp /tmp/opencode-local.deb /tmp/opencode.deb; \
+        ARCH_SUFFIX=$(case "${TARGETARCH}" in amd64) echo "amd64";; arm64) echo "arm64";; *) echo "amd64";; esac) && \
+        echo "Using local .deb for ${ARCH_SUFFIX}" && \
+        cp "/tmp/opencode-desktop-linux-${ARCH_SUFFIX}.deb" /tmp/opencode.deb; \
     else \
         export VERSION="${OPENCODE_VERSION}" && \
         export REPO="anomalyco/opencode" && \
@@ -35,8 +38,9 @@ RUN if [ "${INSTALL_SOURCE}" = "local" ]; then \
             API_URL="https://api.github.com/repos/${REPO}/releases/tags/${VERSION}"; \
         fi && \
         echo "Fetching release metadata from $API_URL" && \
+        ARCH_SUFFIX=$(case "${TARGETARCH}" in amd64) echo "amd64";; arm64) echo "arm64";; *) echo "amd64";; esac) && \
         DOWNLOAD_URL=$(curl -sSL "${API_URL}" | \
-            jq -r '.assets[] | select(.name | endswith(".deb")) | select(.name | contains("amd64")) | .browser_download_url' | head -n 1) && \
+            jq -r ".assets[] | select(.name | endswith(\".deb\")) | select(.name | contains(\"${ARCH_SUFFIX}\")) | .browser_download_url" | head -n 1) && \
         if [ -z "$DOWNLOAD_URL" ] || [ "$DOWNLOAD_URL" = "null" ]; then \
             echo "ERROR: No .deb package found for version ${VERSION}"; exit 1; \
         fi && \
