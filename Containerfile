@@ -1,82 +1,37 @@
-# Stage 1: Acquire the opencode .deb package
-# Pass --build-arg INSTALL_SOURCE=local to copy the .deb from the build context
-# instead of downloading from GitHub (avoids API rate limiting).
-
-# Stage 0: Copy in a dummy file if we have no local version
-FROM docker.io/library/debian:stable-backports AS file-check
-WORKDIR /tmp
-RUN --mount=target=/context [ -f /context/opencode-desktop-linux-amd64.deb ] && cp /context/opencode-desktop-linux-amd64.deb . || touch opencode-desktop-linux-amd64.deb
-RUN --mount=target=/context [ -f /context/opencode-desktop-linux-arm64.deb ] && cp /context/opencode-desktop-linux-arm64.deb . || touch opencode-desktop-linux-arm64.deb
-
-# Stage 1. Download binaries
-FROM docker.io/library/debian:stable-backports AS downloader
-
-ARG OPENCODE_VERSION="latest"
-ARG INSTALL_SOURCE=""
-ARG TARGETARCH
-
-RUN echo "TARGETARCH=${TARGETARCH}"
-
-COPY --from=file-check /tmp/opencode-desktop-linux-amd64.deb /tmp/opencode-desktop-linux-amd64.deb
-COPY --from=file-check /tmp/opencode-desktop-linux-arm64.deb /tmp/opencode-desktop-linux-arm64.deb
-
-RUN apt-get update && \
-    apt-get -y install --no-install-recommends ca-certificates curl jq && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-
-RUN if [ "${INSTALL_SOURCE}" = "local" ]; then \
-        ARCH_SUFFIX=$(case "${TARGETARCH}" in amd64) echo "amd64";; arm64) echo "arm64";; *) echo "amd64";; esac) && \
-        echo "Using local .deb for ${ARCH_SUFFIX}" && \
-        cp "/tmp/opencode-desktop-linux-${ARCH_SUFFIX}.deb" /tmp/opencode.deb; \
-    else \
-        export VERSION="${OPENCODE_VERSION}" && \
-        export REPO="anomalyco/opencode" && \
-        if [ "${VERSION}" = "latest" ]; then \
-            API_URL="https://api.github.com/repos/${REPO}/releases/latest"; \
-        else \
-            API_URL="https://api.github.com/repos/${REPO}/releases/tags/${VERSION}"; \
-        fi && \
-        echo "Fetching release metadata from $API_URL" && \
-        ARCH_SUFFIX=$(case "${TARGETARCH}" in amd64) echo "amd64";; arm64) echo "arm64";; *) echo "amd64";; esac) && \
-        DOWNLOAD_URL=$(curl -sSL "${API_URL}" | \
-            jq -r ".assets[] | select(.name | endswith(\".deb\")) | select(.name | contains(\"${ARCH_SUFFIX}\")) | .browser_download_url" | head -n 1) && \
-        if [ -z "$DOWNLOAD_URL" ] || [ "$DOWNLOAD_URL" = "null" ]; then \
-            echo "ERROR: No .deb package found for version ${VERSION}"; exit 1; \
-        fi && \
-        echo "Downloading: $DOWNLOAD_URL" && \
-        curl -sSL "$DOWNLOAD_URL" -o /tmp/opencode.deb; \
-    fi
-
-# Stage 2: Final image
-FROM docker.io/library/debian:stable-backports
-
-ARG OPENCODE_VERSION="latest"
+FROM docker.io/library/debian:stable-slim
 
 # Maintainer and image description
-LABEL maintainer="Arnulf Heimsbakk <arnulf.heimsbakk@gmail.com>"
-LABEL description="Sikkert arbeidsmiljø for opencode med utviklerverktøy"
-LABEL version="${OPENCODE_VERSION}"
+LABEL maintainer="Arnulf Heimsbakk <arnulf.heimsbakk@gmail.com>" \
+      description="Secure working environment for opencode with developer tools"
 
-# Minimal environment variables for non-interactive builds and locales
-ENV DEBIAN_FRONTEND="noninteractive"
-ENV LANG=nb_NO.UTF-8
-ENV HOME=/home/opencode
-ENV PATH="/usr/local/bin:$PATH"
+# Software versions
+ENV NVM_VERSION=v0.40.4 \
+    UV_VERSION=0.11.7 \
+    PIPENV_VERSION=2026.5.2 \
+    RUFF_VERSION=0.15.11 \
+    OPENCODE_VERSION=latest \
+    BIOME_VERSION=latest
 
-# Copy the pre-downloaded opencode .deb from the downloader stage
-COPY --from=downloader /tmp/opencode.deb /tmp/opencode.deb
+# Opencode search with Exa
+# ENV OPENCODE_ENABLE_EXA=1
 
-# Install required packages + opencode .deb, configure locales, create home dir,
-# and set up shell niceties — all in one layer
+# Minimal environment variables for build and environment
+ENV DEBIAN_FRONTEND="noninteractive" \
+    LANG=nb_NO.UTF-8 \
+    LC_ALL=nb_NO.UTF-8 \
+    HOME=/home/opencode \
+    PATH="/usr/local/bin:$PATH" \
+    NVM_DIR=/home/opencode/.local/lib/nvm \
+    TERM=xterm-256color \
+    EDITOR=vim
+
+# Install required packages 
 RUN apt-get update && \
-    apt-get -y install --no-install-recommends eatmydata && \
-    eatmydata apt-get -y install --no-install-recommends \
+    apt-get -y install --no-install-recommends \
       bash-completion \
       bc \
       ca-certificates \
       curl \
-      gh \
       git \
       gnupg \
       iputils-ping \
@@ -86,21 +41,17 @@ RUN apt-get update && \
       lsof \
       man-db \
       nano \
-      openssh-client \
       pipx \
       procps \
       ripgrep \
       rsync \
       shfmt \
       tini \
-      tmux \
       tree \
       unzip \
       vim \
       zip \
-      /tmp/opencode.deb \
       && \
-    rm /tmp/opencode.deb && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
     # Enable Norwegian and US locales
@@ -115,16 +66,14 @@ RUN apt-get update && \
     echo "alias ls='ls --color=auto'" >> /etc/bash.bashrc && \
     echo "alias grep='grep --color=auto'" >> /etc/bash.bashrc
 
-# Copy and make the container entrypoint script executable
-COPY --chmod=755 container-init.sh /usr/local/bin/container-init.sh
+# Init script
+ADD container-init.sh /
 
 # Working directory and volumes exposed by the image
 WORKDIR /work
+RUN ls -l /home/opencode
 VOLUME ["/work", "/home/opencode"]
 
-# tini acts as PID 1 so SIGINT/SIGTERM (CTRL+C) are properly forwarded to
-# container-init.sh and any child process it exec's (e.g. opencode-cli web).
-# This makes CTRL+C work in both interactive TUI mode and headless web-server mode
-# without needing a manual trap/wait loop inside the init script.
-ENTRYPOINT ["/usr/bin/tini", "-s", "-g", "--", "/usr/local/bin/container-init.sh"]
-CMD ["/usr/bin/opencode-cli"]
+# Execute shell as default
+ENTRYPOINT ["/usr/bin/tini", "--", "/container-init.sh"]
+CMD ["opencode"]
