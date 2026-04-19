@@ -5,6 +5,8 @@
 ## Introduction
 This repository provides a container setup for running OpenCode in a relaxed, "safe-vibe" development environment. It ensures a reproducible workspace while protecting your host system and keeping dependencies isolated.
 
+The image is based on `debian:stable-slim` for a minimal footprint. Developer tools (Node via NVM, opencode-ai, Biome, uv, pipenv, ruff) are installed at first container start and persisted in the `/home/opencode` named volume, so subsequent starts are fast.
+
 ## Prerequisites
 - Podman (rootless recommended). Minimum tested: Podman 4.x.
 - A POSIX shell (bash, zsh).
@@ -12,31 +14,27 @@ This repository provides a container setup for running OpenCode in a relaxed, "s
 
 ## Quickstart
 
-### Download from GitHub (default)
-Fetches the latest release `.deb` from GitHub at build time:
+Build the image:
 
 ```bash
 podman build --no-cache -t opencode:latest .
 ```
 
-### Use a local `.deb` file (avoids GitHub API rate limiting)
-Place the `opencode-desktop-linux-amd64.deb` file in the repository root, then pass `INSTALL_SOURCE=local`:
+Software versions (NVM, opencode-ai, Biome, uv, pipenv, ruff) are pinned via `ENV` variables in the `Containerfile` and can be overridden at build time with `--build-arg`:
 
 ```bash
-podman build --no-cache --build-arg INSTALL_SOURCE=local -t opencode:latest .
+podman build --no-cache --build-arg OPENCODE_VERSION=0.3.1 -t opencode:latest .
 ```
 
-You can also pin to a specific version when downloading from GitHub:
-
-```bash
-podman build --no-cache --build-arg OPENCODE_VERSION=v1.2.3 -t opencode:v1.2.3 .
-```
-
-### Build-arg Reference
-| Argument | Default | Description |
+### Build-arg / ENV Reference
+| Variable | Default | Description |
 | :--- | :--- | :--- |
-| `INSTALL_SOURCE` | *(empty)* | Set to `local` to install from a `.deb` in the build context instead of downloading. |
-| `OPENCODE_VERSION` | `latest` | GitHub release tag to download (e.g. `v1.2.3`). Ignored when `INSTALL_SOURCE=local`. |
+| `NVM_VERSION` | `v0.40.4` | NVM release to install. |
+| `OPENCODE_VERSION` | `latest` | npm tag/version for `opencode-ai`. |
+| `BIOME_VERSION` | `latest` | npm tag/version for `@biomejs/biome`. |
+| `UV_VERSION` | `0.11.7` | pipx version constraint for `uv`. |
+| `PIPENV_VERSION` | `2026.5.2` | pipx version constraint for `pipenv`. |
+| `RUFF_VERSION` | `0.15.11` | pipx version constraint for `ruff`. |
 
 If you want to enable Exa web tools at runtime, add `-e OPENCODE_ENABLE_EXA=1` to your `podman run` command.
 
@@ -72,6 +70,24 @@ grep -q "^alias oc=" ~/.bashrc && sed -i "s|^alias oc=.*|$OC|" ~/.bashrc || echo
 grep -q "^alias ocw=" ~/.bashrc && sed -i "s|^alias ocw=.*|$OCW|" ~/.bashrc || echo "$OCW" >> ~/.bashrc
 source ~/.bashrc
 ```
+
+### Upgrading software
+
+Pass `upgrade` as the first argument to force-reinstall all managed packages (opencode-ai, Biome, uv, pipenv, ruff) to the versions defined by the `ENV` variables in the `Containerfile`. The container exits after the upgrade is complete.
+
+```bash
+podman run --rm --userns=keep-id -ti \
+  -v opencode:/home/opencode \
+  opencode:latest upgrade
+```
+
+If you have the `oc` alias set up:
+
+```bash
+oc upgrade
+```
+
+> **Note:** The upgrade run exits with a non-zero status code by design. This distinguishes an upgrade invocation from a normal interactive session and prevents accidentally continuing into a shell after the upgrade.
 
 ### Flag Reference
 | Flag | Description |
