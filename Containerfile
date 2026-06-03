@@ -53,6 +53,8 @@ RUN apt-get update && \
       unzip \
       vim \
       zip \
+      file \
+      xxd \
       && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
