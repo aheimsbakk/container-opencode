@@ -23,7 +23,8 @@ ENV DEBIAN_FRONTEND="noninteractive" \
     PATH="/usr/local/bin:$PATH" \
     NVM_DIR=/home/opencode/.local/lib/nvm \
     TERM=xterm-256color \
-    EDITOR=vim
+    EDITOR=vim \
+    CGO_ENABLED=1
 
 # Install required packages 
 RUN apt-get update && \
@@ -32,6 +33,8 @@ RUN apt-get update && \
       bc \
       ca-certificates \
       curl \
+      file \
+      gcc \
       git \
       gnupg \
       golang \
@@ -39,6 +42,7 @@ RUN apt-get update && \
       iputils-ping \
       jq \
       less \
+      libc6-dev \
       locales \
       lsof \
       man-db \
@@ -52,9 +56,8 @@ RUN apt-get update && \
       tree \
       unzip \
       vim \
-      zip \
-      file \
       xxd \
+      zip \
       && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
