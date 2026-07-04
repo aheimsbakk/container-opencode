@@ -25,16 +25,21 @@ source "$NVM_DIR/nvm.sh"
 # Install Node
 which node &> /dev/null || nvm install --lts
 
+# Minimum age set to one week
+npm config set min-release-age 7 --location=user
+
 # Install node packages
-( ! $UPGRADE && npm list -g opencode-ai )    &> /dev/null || npm i -g "opencode-ai@$OPENCODE_VERSION"
-( ! $UPGRADE && npm list -g @biomejs/biome ) &> /dev/null || npm i -g "@biomejs/biome@$BIOME_VERSION"
+( ! $UPGRADE && npm list -g opencode-ai )    &> /dev/null || npm i -g "opencode-ai"
+( ! $UPGRADE && npm list -g @biomejs/biome ) &> /dev/null || npm i -g "@biomejs/biome"
 
 # Install PIP packages
 PATH=$PATH:$HOME/.local/bin
 
-( ! $UPGRADE && which uv )     &> /dev/null || pipx install --force -qq uv~=$UV_VERSION
-( ! $UPGRADE && which pipenv ) &> /dev/null || pipx install --force -qq pipenv~=$PIPENV_VERSION
-( ! $UPGRADE && which ruff )   &> /dev/null || pipx install --force -qq ruff~=$RUFF_VERSION
+( ! $UPGRADE && which uv )         &> /dev/null || pipx install -qq uv~=$UV_VERSION
+( ! $UPGRADE && which pipenv )     &> /dev/null || uv tool install --exclude-newer "1 week" pipenv
+( ! $UPGRADE && which ruff )       &> /dev/null || uv tool install --exclude-newer "1 week" ruff
+( ! $UPGRADE && which ralph-loop )     &> /dev/null || uv tool install --exclude-newer "1 week" git+https://github.com/aheimsbakk/ralph-loop
+( ! $UPGRADE && which gitsem ) &> /dev/null || uv tool install --exclude-newer "1 week" git+https://github.com/aheimsbakk/gitsem
 
 if [[ "${1,,}" == "upgrade" ]]
 then
