@@ -2,8 +2,7 @@
 set -e
 
 # Allow upgrade
-if [[ "${1,,}" == "upgrade" ]]
-then
+if [[ "${1,,}" == "upgrade" ]]; then
 	UPGRADE=true
 else
 	UPGRADE=false
@@ -13,8 +12,7 @@ fi
 rsync -ur /etc/skel/ /home/opencode/
 
 # Install NVM
-if [[ ! -d "$NVM_DIR" ]]
-then
+if [[ ! -d "$NVM_DIR" ]]; then
 	mkdir -p "$NVM_DIR"
 	curl -o- "https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_VERSION}/install.sh" | PROFILE=$HOME/.profile bash
 fi
@@ -23,26 +21,48 @@ fi
 source "$NVM_DIR/nvm.sh"
 
 # Install Node
-which node &> /dev/null || nvm install --lts
+if [[ "$UPGRADE" == "true" ]] || ! command -v node &>/dev/null; then
+	nvm install --lts
+fi
 
 # Minimum age set to one week
 npm config set min-release-age 7 --location=user
 
 # Install node packages
-( ! $UPGRADE && npm list -g opencode-ai )    &> /dev/null || npm i -g "opencode-ai"
-( ! $UPGRADE && npm list -g @biomejs/biome ) &> /dev/null || npm i -g "@biomejs/biome"
+install_npm_package() {
+	if [[ "$UPGRADE" == "true" ]] || ! npm list -g "$1" &>/dev/null; then
+		echo "[init] Installing $1..."
+		npm i -g "$1"
+	fi
+}
+
+install_npm_package opencode-ai
+install_npm_package "@biomejs/biome"
 
 # Install PIP packages
 PATH=$PATH:$HOME/.local/bin
 
-( ! $UPGRADE && which uv )         &> /dev/null || pipx install -qq uv~=$UV_VERSION
-( ! $UPGRADE && which pipenv )     &> /dev/null || uv tool install --exclude-newer "1 week" pipenv
-( ! $UPGRADE && which ruff )       &> /dev/null || uv tool install --exclude-newer "1 week" ruff
-( ! $UPGRADE && which ralph-loop )     &> /dev/null || uv tool install --exclude-newer "1 week" git+https://github.com/aheimsbakk/ralph-loop
-( ! $UPGRADE && which gitsem ) &> /dev/null || uv tool install --exclude-newer "1 week" git+https://github.com/aheimsbakk/gitsem
+# Install uv via pipx first (required for uv tool install)
+if [[ "${1,,}" == "upgrade" ]] || ! command -v uv &>/dev/null; then
+	echo "[init] Installing uv..."
+	pipx install --force -qq "uv~=$UV_VERSION"
+fi
 
-if [[ "${1,,}" == "upgrade" ]]
-then
+# Install uv tool packages
+_UPGRADE="${1,,}"
+install_uv_tool() {
+	if [[ "$_UPGRADE" == "upgrade" ]] || ! command -v "$1" &>/dev/null; then
+		echo "[init] Installing $1..."
+		uv tool install --exclude-newer "1 week" "${2:-$1}"
+	fi
+}
+
+install_uv_tool pipenv
+install_uv_tool ruff
+install_uv_tool ralph-loop "git+https://github.com/aheimsbakk/ralph-loop"
+install_uv_tool gitsem "git+https://github.com/aheimsbakk/gitsem"
+
+if [[ "${1,,}" == "upgrade" ]]; then
 	exit 1
 fi
 

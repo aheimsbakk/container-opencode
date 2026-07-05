@@ -9,7 +9,7 @@
 | Init Process | tini (PID 1) |
 | Shell | Bash (login shell) |
 | Node Manager | NVM |
-| Python Package Mgr | pipx (uv, pipenv, ruff) |
+| Python Package Mgr | pipx (uv), uv tool (pipenv, ruff, ralph-loop, gitsem) |
 | npm Packages | opencode-ai, @biomejs/biome |
 | Config Format | JSON (opencode.json) |
 
@@ -38,7 +38,8 @@
 
 **Key sections:**
 - `FROM debian:stable-slim` → Base OS
-- `ENV` declarations → Build-time variables
+- `ENV NVM_VERSION`, `UV_VERSION` → Software version constraints
+- `ENV DEBIAN_FRONTEND`, `LANG`, `LC_ALL`, `HOME`, `PATH`, `NVM_DIR`, `TERM`, `EDITOR`, `CGO_ENABLED` → Runtime environment
 - `RUN apt-get install ...` → APT packages
 - `RUN locale-gen` → Locale setup
 - `RUN ... /etc/bash.bashrc` → Shell niceties
@@ -54,14 +55,19 @@
 | `container-init.sh` | Runtime Installer (NVM, Node, npm, pipx, shell launch) |
 
 **Key logic blocks:**
-- Lines 1–10: Upgrade flag detection (`$1 == "upgrade"`)
-- Line 13: Skeleton copy (`rsync /etc/skel → /home/opencode`)
-- Lines 16–20: NVM installation
-- Lines 23–26: NVM sourcing + Node LTS install
-- Lines 29–30: npm global packages (conditional install)
-- Lines 33–37: pipx packages (uv, pipenv, ruff — conditional install)
-- Lines 39–42: Upgrade exit logic (exit 1)
-- Lines 45–48: Shell launch (`exec bash -l` or `exec bash -l -c "$*"`)
+- Lines 1–9: Upgrade flag detection (`$1 == "upgrade"`)
+- Line 12: Skeleton copy (`rsync /etc/skel → /home/opencode`)
+- Lines 15–18: NVM installation
+- Lines 21: NVM sourcing
+- Lines 24–26: Node LTS install (conditional on upgrade or missing)
+- Line 29: npm config (min-release-age)
+- Lines 32–36: `install_npm_package` helper function
+- Lines 39–40: npm global packages (opencode-ai, @biomejs/biome)
+- Lines 46–49: uv installation via pipx (conditional on upgrade or missing)
+- Lines 53–57: `install_uv_tool` helper function
+- Lines 60–63: uv tool packages (pipenv, ruff, ralph-loop, gitsem)
+- Lines 65–67: Upgrade exit logic (exit 1)
+- Lines 70–73: Shell launch (`exec bash -l` or `exec bash -l -c "$*"`)
 
 ### opencode.json → Agent Configuration
 
@@ -107,7 +113,7 @@ podman build --no-cache -t opencode:latest .
 With custom version:
 
 ```bash
-podman build --no-cache --build-arg OPENCODE_VERSION=0.3.1 -t opencode:latest .
+podman build --no-cache --build-arg NVM_VERSION=v0.40.4 --build-arg UV_VERSION=0.11.26 -t opencode:latest .
 ```
 
 ### Run (Interactive)
@@ -156,11 +162,13 @@ podman run --rm --userns=keep-id -ti \
 | :--- | :--- | :--- | :--- |
 | `debian:stable-slim` | Base image | Docker Hub | `stable-slim` tag |
 | NVM | Node version manager | `ENV NVM_VERSION` in Containerfile | `v0.40.4` |
-| opencode-ai | npm package | `container-init.sh` line 29 | `ENV OPENCODE_VERSION` |
-| @biomejs/biome | npm package | `container-init.sh` line 30 | `ENV BIOME_VERSION` |
-| uv | pipx package | `container-init.sh` line 35 | `ENV UV_VERSION` |
-| pipenv | pipx package | `container-init.sh` line 36 | `ENV PIPENV_VERSION` |
-| ruff | pipx package | `container-init.sh` line 37 | `ENV RUFF_VERSION` |
+| opencode-ai | npm package | `container-init.sh` line 39 | npm default |
+| @biomejs/biome | npm package | `container-init.sh` line 40 | npm default |
+| uv | pipx package | `container-init.sh` line 48 | `ENV UV_VERSION` (`0.11.26`) |
+| pipenv | uv tool | `container-init.sh` line 60 | latest |
+| ruff | uv tool | `container-init.sh` line 61 | latest |
+| ralph-loop | uv tool (git) | `container-init.sh` line 62 | unpinned git URL |
+| gitsem | uv tool (git) | `container-init.sh` line 63 | unpinned git URL |
 | tini | Init process | APT package | Debian stable repo |
 | pipx | Python package installer | APT package | Debian stable repo |
 
