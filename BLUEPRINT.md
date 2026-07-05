@@ -18,14 +18,15 @@ Container Image (debian:stable-slim)
 │   ├── Debian stable-slim
 │   └── APT packages (bash-completion, bc, ca-certificates, curl, file, gcc, git, gnupg, golang, govulncheck, iputils-ping, jq, less, libc6-dev, locales, lsof, man-db, nano, pipx, procps, ripgrep, rsync, shfmt, tini, tree, unzip, vim, xxd, zip)
 ├── Environment Configuration
-│   ├── ENV variables (NVM_VERSION, UV_VERSION, PIPENV_VERSION, RUFF_VERSION, OPENCODE_VERSION, BIOME_VERSION, DEBIAN_FRONTEND, LANG, LC_ALL, HOME, PATH, NVM_DIR, TERM, EDITOR, CGO_ENABLED)
+│   ├── ENV variables (NVM_VERSION, UV_VERSION, DEBIAN_FRONTEND, LANG, LC_ALL, HOME, PATH, NVM_DIR, TERM, EDITOR, CGO_ENABLED)
 │   ├── Locale setup (nb_NO.UTF-8, en_US.UTF-8)
 │   └── Shell niceties (bash-completion, aliases)
 ├── Runtime Installer (`container-init.sh`)
 │   ├── Skeleton copy (/etc/skel → /home/opencode)
 │   ├── NVM installation & Node LTS
-│   ├── npm global packages (opencode-ai, @biomejs/biome)
-│   ├── pipx packages (uv, pipenv, ruff)
+│   ├── npm global packages via `install_npm_package` helper (opencode-ai, @biomejs/biome)
+│   ├── pipx packages (uv)
+│   ├── uv tool packages via `install_uv_tool` helper (pipenv, ruff, ralph-loop, gitsem)
 │   └── Shell launch (exec bash -l or exec bash -l -c "$*")
 └── Entrypoint / CMD
     ├── ENTRYPOINT: tini → container-init.sh
@@ -59,9 +60,10 @@ container-init.sh (PID 1 via tini)
     ├── Check $1 for "upgrade"
     ├── Copy skeleton files
     ├── Install NVM (if missing)
-    ├── Install Node LTS (if missing)
-    ├── Install npm packages (if missing or upgrade)
-    ├── Install pipx packages (if missing or upgrade)
+    ├── Install Node LTS (if missing or upgrade)
+    ├── Install npm packages via helper (if missing or upgrade)
+    ├── Install uv via pipx (if missing or upgrade)
+    ├── Install uv tool packages via helper (if missing or upgrade)
     └── exec bash -l | exec bash -l -c "$*"
 ```
 
@@ -102,11 +104,7 @@ CMD ["opencode"]
 | Variable | Default | Role |
 | :--- | :--- | :--- |
 | `NVM_VERSION` | `v0.40.4` | NVM release tag |
-| `UV_VERSION` | `0.11.7` | uv version constraint |
-| `PIPENV_VERSION` | `2026.5.2` | pipenv version constraint |
-| `RUFF_VERSION` | `0.15.11` | ruff version constraint |
-| `OPENCODE_VERSION` | `latest` | opencode-ai npm tag |
-| `BIOME_VERSION` | `latest` | @biomejs/biome npm tag |
+| `UV_VERSION` | `0.11.26` | uv version constraint |
 | `OPENCODE_ENABLE_EXA` | *(unset)* | Enable Exa web tools at runtime |
 
 ### Runtime Arguments
@@ -138,16 +136,19 @@ CMD ["opencode"]
 | :--- | :--- | :--- |
 | `debian:stable-slim` | Docker Hub | Base OS image |
 | `nvm-sh/nvm` (GitHub) | `https://github.com/nvm-sh/nvm` | Node version manager |
-| `opencode-ai` | npm | OpenCode agent CLI |
-| `@biomejs/biome` | npm | Fast formatter/linter |
+| `opencode-ai` | npm (latest) | OpenCode agent CLI |
+| `@biomejs/biome` | npm (latest) | Fast formatter/linter |
 | `uv` | PyPI (via pipx) | Python package manager |
-| `pipenv` | PyPI (via pipx) | Python dependency manager |
-| `ruff` | PyPI (via pipx) | Python linter/formatter |
+| `pipenv` | PyPI (via uv tool) | Python dependency manager |
+| `ruff` | PyPI (via uv tool) | Python linter/formatter |
+| `ralph-loop` | GitHub (via uv tool) | Custom tool |
+| `gitsem` | GitHub (via uv tool) | Custom tool |
 
 ## Error Boundaries
 
 - `set -e` in `container-init.sh` aborts the init on any command failure.
-- Each package installation uses a conditional check (`which` / `npm list`) to avoid redundant installs.
+- Each package installation uses a conditional check (`command -v` / `npm list`) to avoid redundant installs.
+- Helper functions (`install_npm_package`, `install_uv_tool`) encapsulate installation logic with upgrade support.
 - Upgrade mode exits with code 1 to distinguish from normal operation.
 - `tini` handles SIGINT/SIGTERM forwarding; no custom signal traps needed.
 

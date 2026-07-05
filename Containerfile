@@ -6,11 +6,7 @@ LABEL maintainer="Arnulf Heimsbakk <arnulf.heimsbakk@gmail.com>" \
 
 # Software versions
 ENV NVM_VERSION=v0.40.4 \
-    UV_VERSION=0.11.7 \
-    PIPENV_VERSION=2026.5.2 \
-    RUFF_VERSION=0.15.11 \
-    OPENCODE_VERSION=latest \
-    BIOME_VERSION=latest
+    UV_VERSION=0.11.26
 
 # Opencode search with Exa
 # ENV OPENCODE_ENABLE_EXA=1
