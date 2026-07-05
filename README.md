@@ -5,7 +5,7 @@
 ## Introduction
 This repository provides a container setup for running OpenCode in a relaxed, "safe-vibe" development environment. It ensures a reproducible workspace while protecting your host system and keeping dependencies isolated.
 
-The image is based on `debian:stable-slim` for a minimal footprint. Developer tools (Node via NVM, opencode-ai, Biome, uv, pipenv, ruff) are installed at first container start and persisted in the `/home/opencode` named volume, so subsequent starts are fast.
+The image is based on `debian:stable-slim` for a minimal footprint. Developer tools (Node via NVM, opencode-ai, Biome, uv, pipenv, ruff, ralph-loop, gitsem) are installed at first container start and persisted in the `/home/opencode` named volume, so subsequent starts are fast.
 
 ## Prerequisites
 - Podman (rootless recommended). Minimum tested: Podman 4.x.
@@ -20,21 +20,17 @@ Build the image:
 podman build --no-cache -t opencode:latest .
 ```
 
-Software versions (NVM, opencode-ai, Biome, uv, pipenv, ruff) are pinned via `ENV` variables in the `Containerfile` and can be overridden at build time with `--build-arg`:
+`NVM_VERSION` and `UV_VERSION` are pinned via `ENV` variables in the `Containerfile` and can be overridden at build time with `--build-arg`:
 
 ```bash
-podman build --no-cache --build-arg OPENCODE_VERSION=0.3.1 -t opencode:latest .
+podman build --no-cache --build-arg UV_VERSION=0.11.26 -t opencode:latest .
 ```
 
 ### Build-arg / ENV Reference
 | Variable | Default | Description |
 | :--- | :--- | :--- |
 | `NVM_VERSION` | `v0.40.4` | NVM release to install. |
-| `OPENCODE_VERSION` | `latest` | npm tag/version for `opencode-ai`. |
-| `BIOME_VERSION` | `latest` | npm tag/version for `@biomejs/biome`. |
-| `UV_VERSION` | `0.11.7` | pipx version constraint for `uv`. |
-| `PIPENV_VERSION` | `2026.5.2` | pipx version constraint for `pipenv`. |
-| `RUFF_VERSION` | `0.15.11` | pipx version constraint for `ruff`. |
+| `UV_VERSION` | `0.11.26` | pipx version constraint for `uv`. |
 
 If you want to enable Exa web tools at runtime, add `-e OPENCODE_ENABLE_EXA=1` to your `podman run` command.
 
@@ -73,7 +69,7 @@ source ~/.bashrc
 
 ### Upgrading software
 
-Pass `upgrade` as the first argument to force-reinstall all managed packages (opencode-ai, Biome, uv, pipenv, ruff) to the versions defined by the `ENV` variables in the `Containerfile`. The container exits after the upgrade is complete.
+Pass `upgrade` as the first argument to force-reinstall all managed packages (opencode-ai, Biome, uv, pipenv, ruff, ralph-loop, gitsem). The container exits after the upgrade is complete.
 
 ```bash
 podman run --rm --userns=keep-id -ti \
