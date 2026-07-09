@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.1.1] - 2026-07-09
+
+- **why:** Add o2cfg tool and sync documentation
+- **model:** qwen-3.6-think-coding
+- **tags:** container, uv-tools, docs
+
+### Added
+
+- Add `o2cfg` uv tool to `container-init.sh`
+
+### Changed
+
+- Update `README.md` to reflect installed tools (ralph-loop, gitsem, o2cfg)
+- Simplify build-arg reference in `README.md` to only `NVM_VERSION` and `UV_VERSION`
+
 ## [0.1.0] - 2026-07-05
 
 - **why:** Refactor init script with helper functions and update Containerfile
