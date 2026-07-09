@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.1.2] - 2026-07-09
+
+- **why:** Fix condition evaluation order in init script guards
+- **model:** qwen-3.6-think-coding
+- **tags:** container, init-script, bugfix
+
+### Fixed
+
+- Reorder `||` conditions in install guards to check command existence first, then UPGRADE flag
+
 ## [0.1.1] - 2026-07-09
 
 - **why:** Add o2cfg tool and sync documentation

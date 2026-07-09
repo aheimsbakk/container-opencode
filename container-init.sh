@@ -21,7 +21,7 @@ fi
 source "$NVM_DIR/nvm.sh"
 
 # Install Node
-if [[ "$UPGRADE" == "true" ]] || ! command -v node &>/dev/null; then
+if ! command -v node &>/dev/null || [[ "$UPGRADE" == "true" ]]; then
 	nvm install --lts
 fi
 
@@ -30,7 +30,7 @@ npm config set min-release-age 7 --location=user
 
 # Install node packages
 install_npm_package() {
-	if [[ "$UPGRADE" == "true" ]] || ! npm list -g "$1" &>/dev/null; then
+	if ! npm list -g "$1" &>/dev/null || [[ "$UPGRADE" == "true" ]]; then
 		echo "[init] Installing $1..."
 		npm i -g "$1"
 	fi
@@ -43,7 +43,7 @@ install_npm_package "@biomejs/biome"
 PATH=$PATH:$HOME/.local/bin
 
 # Install uv via pipx first (required for uv tool install)
-if [[ "${1,,}" == "upgrade" ]] || ! command -v uv &>/dev/null; then
+if ! command -v uv &>/dev/null || [[ "${1,,}" == "upgrade" ]]; then
 	echo "[init] Installing uv..."
 	pipx install --force -qq "uv~=$UV_VERSION"
 fi
@@ -51,7 +51,7 @@ fi
 # Install uv tool packages
 _UPGRADE="${1,,}"
 install_uv_tool() {
-	if [[ "$_UPGRADE" == "upgrade" ]] || ! command -v "$1" &>/dev/null; then
+	if ! command -v "$1" &>/dev/null || [[ "$_UPGRADE" == "upgrade" ]]; then
 		echo "[init] Installing $1..."
 		uv tool install --exclude-newer "1 week" "${2:-$1}"
 	fi
