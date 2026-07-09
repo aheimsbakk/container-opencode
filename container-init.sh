@@ -61,6 +61,7 @@ install_uv_tool pipenv
 install_uv_tool ruff
 install_uv_tool ralph-loop "git+https://github.com/aheimsbakk/ralph-loop"
 install_uv_tool gitsem "git+https://github.com/aheimsbakk/gitsem"
+install_uv_tool o2cfg "git+https://github.com/aheimsbakk/o2cfg"
 
 if [[ "${1,,}" == "upgrade" ]]; then
 	exit 1
