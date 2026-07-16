@@ -30,6 +30,7 @@ RUN apt-get update && \
       ca-certificates \
       curl \
       file \
+      gawk \
       gcc \
       git \
       gnupg \
