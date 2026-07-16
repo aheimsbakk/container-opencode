@@ -12,3 +12,7 @@ build/
 
 # Deb
 *.deb
+
+# AI / workflow artifacts
+.qa-error.log
+.handoff/

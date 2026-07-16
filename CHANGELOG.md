@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.1.3] - 2026-07-16
+
+- **why:** Workspace hygiene: update .gitignore, add changelog validation, bump version before commit
+- **model:** github-copilot/gpt-5-mini
+- **tags:** chore, release, docs
+
+### Added
+
+- Add `scripts/validate-changelog.sh` to verify VERSION matches the top changelog entry
+
+### Changed
+
+- Update `.gitignore` to ignore temporary AI/workflow artifacts (`.qa-error.log`, `.handoff/`)
+- Bump `VERSION` to `0.1.3`
+
 ## [0.1.2] - 2026-07-09
 
 - **why:** Fix condition evaluation order in init script guards
