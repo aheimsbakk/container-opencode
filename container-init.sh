@@ -8,44 +8,35 @@ else
 	UPGRADE=false
 fi
 
+# Ensure path
+PATH=$HOME/.local/bin:$HOME/node_modules/.bin:$PATH
+
 # Install skeleton
 rsync -ur /etc/skel/ /home/opencode/
-
-# Install NVM
-if [[ ! -d "$NVM_DIR" ]]; then
-	mkdir -p "$NVM_DIR"
-	curl -o- "https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_VERSION}/install.sh" | PROFILE=$HOME/.profile bash
-fi
-
-# Source NVM
-source "$NVM_DIR/nvm.sh"
-
-# Install Node
-if ! command -v node &>/dev/null || [[ "$UPGRADE" == "true" ]]; then
-	nvm install --lts
-fi
 
 # Minimum age set to one week
 npm config set min-release-age 7 --location=user
 
 # Install node packages
 install_npm_package() {
-	if ! npm list -g "$1" &>/dev/null || [[ "$UPGRADE" == "true" ]]; then
+	cd $HOME
+	if ! npm list "$1" &>/dev/null || [[ "$UPGRADE" == "true" ]]; then
 		echo "[init] Installing $1..."
-		npm i -g "$1"
+		npm i "$1"
 	fi
+	cd /work
 }
 
 install_npm_package opencode-ai
 install_npm_package "@biomejs/biome"
 
-# Install PIP packages
-PATH=$PATH:$HOME/.local/bin
+# Set PATH to node modules
+grep -q node_modules /home/opencode/.profile || echo 'PATH=$HOME/node_modules/.bin:$PATH' >> /home/opencode/.profile
 
 # Install uv via pipx first (required for uv tool install)
 if ! command -v uv &>/dev/null || [[ "${1,,}" == "upgrade" ]]; then
 	echo "[init] Installing uv..."
-	pipx install --force -qq "uv~=$UV_VERSION"
+	pipx install --force "uv~=$UV_VERSION"
 fi
 
 # Install uv tool packages

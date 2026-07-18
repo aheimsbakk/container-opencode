@@ -1,5 +1,29 @@
 # Changelog
 
+## [0.2.0] - 2026-07-18
+
+- **why:** Add Playwright browser automation via MCP and switch base image to node:26
+- **model:** deepseek-v4-flash-free
+- **tags:** container, playwright, mcp, base-image
+
+### Added
+
+- Playwright MCP server config with Chromium to `opencode.json`
+- Browser dependency installation step to Containerfile
+- Playwright artifact patterns to `.gitignore`
+
+### Changed
+
+- Switch base image from `debian:stable-slim` to `node:26` in Containerfile, removing NVM dependency
+- Move npm packages from global to local install in `container-init.sh`
+- Add `--shm-size=2gb` to podman run examples in `README.md`
+- Move `HOME` env var after `WORKDIR` in Containerfile
+
+### Removed
+
+- NVM install and Node LTS installation from `container-init.sh`
+- `NVM_VERSION` and `NVM_DIR` environment variables from Containerfile
+
 ## [0.1.3] - 2026-07-16
 
 - **why:** Workspace hygiene: update .gitignore, add changelog validation, bump version before commit

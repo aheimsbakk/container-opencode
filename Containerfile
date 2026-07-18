@@ -1,12 +1,11 @@
-FROM docker.io/library/debian:stable-slim
+FROM docker.io/library/node:26
 
 # Maintainer and image description
 LABEL maintainer="Arnulf Heimsbakk <arnulf.heimsbakk@gmail.com>" \
       description="Secure working environment for opencode with developer tools"
 
 # Software versions
-ENV NVM_VERSION=v0.40.4 \
-    UV_VERSION=0.11.26
+ENV UV_VERSION=0.11.26
 
 # Opencode search with Exa
 # ENV OPENCODE_ENABLE_EXA=1
@@ -15,9 +14,7 @@ ENV NVM_VERSION=v0.40.4 \
 ENV DEBIAN_FRONTEND="noninteractive" \
     LANG=nb_NO.UTF-8 \
     LC_ALL=nb_NO.UTF-8 \
-    HOME=/home/opencode \
     PATH="/usr/local/bin:$PATH" \
-    NVM_DIR=/home/opencode/.local/lib/nvm \
     TERM=xterm-256color \
     EDITOR=vim \
     CGO_ENABLED=1
@@ -70,13 +67,23 @@ RUN apt-get update && \
     echo "alias ls='ls --color=auto'" >> /etc/bash.bashrc && \
     echo "alias grep='grep --color=auto'" >> /etc/bash.bashrc
 
+# Only install packages that have been relased 7 days ago
+RUN npm config set min-release-age 7 --global
+
+# Install playwright for use with playwright mcp (browser access)
+RUN npx playwright install-deps && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* 
+
 # Init script
 ADD container-init.sh /
 
 # Working directory and volumes exposed by the image
 WORKDIR /work
-RUN ls -l /home/opencode
 VOLUME ["/work", "/home/opencode"]
+
+# Set home to opencode
+ENV HOME=/home/opencode
 
 # Execute shell as default
 ENTRYPOINT ["/usr/bin/tini", "--", "/container-init.sh"]
