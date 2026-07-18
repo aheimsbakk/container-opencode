@@ -16,3 +16,6 @@ build/
 # AI / workflow artifacts
 .qa-error.log
 .handoff/
+
+# Playwright
+.playwright*

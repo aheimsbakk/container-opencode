@@ -4,8 +4,8 @@
 
 Provide an isolated, reproducible development environment for the OpenCode agent. The container:
 
-- Runs on a minimal Debian base.
-- Installs and persists a toolchain (Node/NVM, opencode-ai, Biome, uv, pipenv, ruff) on first start.
+- Runs on a Node.js 26 base image.
+- Installs and persists a toolchain (opencode-ai, Biome, uv, pipenv, ruff, Playwright/MCP) on first start.
 - Mounts a host directory into `/work` for live editing.
 - Persists user data in a named volume at `/home/opencode`.
 - Uses `tini` as PID 1 for proper signal forwarding and zombie reaping.
@@ -13,20 +13,19 @@ Provide an isolated, reproducible development environment for the OpenCode agent
 ## Component Hierarchy
 
 ```
-Container Image (debian:stable-slim)
+Container Image (node:26)
 ├── Base OS Layer
-│   ├── Debian stable-slim
-│   └── APT packages (bash-completion, bc, ca-certificates, curl, file, gcc, git, gnupg, golang, govulncheck, iputils-ping, jq, less, libc6-dev, locales, lsof, man-db, nano, pipx, procps, ripgrep, rsync, shfmt, tini, tree, unzip, vim, xxd, zip)
+│   ├── Node.js 26 (Debian-based)
+│   └── APT packages (bash-completion, bc, ca-certificates, curl, file, gcc, git, gnupg, golang, govulncheck, iputils-ping, jq, less, libc6-dev, locales, lsof, man-db, nano, pipx, procps, ripgrep, rsync, shfmt, tini, tree, unzip, vim, xxd, zip, Playwright deps)
 ├── Environment Configuration
-│   ├── ENV variables (NVM_VERSION, UV_VERSION, DEBIAN_FRONTEND, LANG, LC_ALL, HOME, PATH, NVM_DIR, TERM, EDITOR, CGO_ENABLED)
+│   ├── ENV variables (UV_VERSION, DEBIAN_FRONTEND, LANG, LC_ALL, HOME, PATH, TERM, EDITOR, CGO_ENABLED)
 │   ├── Locale setup (nb_NO.UTF-8, en_US.UTF-8)
 │   └── Shell niceties (bash-completion, aliases)
 ├── Runtime Installer (`container-init.sh`)
 │   ├── Skeleton copy (/etc/skel → /home/opencode)
-│   ├── NVM installation & Node LTS
-│   ├── npm global packages via `install_npm_package` helper (opencode-ai, @biomejs/biome)
+│   ├── npm local packages via `install_npm_package` helper (opencode-ai, @biomejs/biome)
 │   ├── pipx packages (uv)
-│   ├── uv tool packages via `install_uv_tool` helper (pipenv, ruff, ralph-loop, gitsem)
+│   ├── uv tool packages via `install_uv_tool` helper (pipenv, ruff, ralph-loop, gitsem, o2cfg)
 │   └── Shell launch (exec bash -l or exec bash -l -c "$*")
 └── Entrypoint / CMD
     ├── ENTRYPOINT: tini → container-init.sh
@@ -59,8 +58,6 @@ container-init.sh (PID 1 via tini)
     │
     ├── Check $1 for "upgrade"
     ├── Copy skeleton files
-    ├── Install NVM (if missing)
-    ├── Install Node LTS (if missing or upgrade)
     ├── Install npm packages via helper (if missing or upgrade)
     ├── Install uv via pipx (if missing or upgrade)
     ├── Install uv tool packages via helper (if missing or upgrade)
@@ -73,9 +70,7 @@ container-init.sh (PID 1 via tini)
 
 | Path | Purpose |
 | :--- | :--- |
-| `/home/opencode/.local/lib/nvm` | NVM installation |
-| `/home/opencode/.nvm` | NVM metadata |
-| `/home/opencode/.npm` | npm cache / global packages |
+| `/home/opencode/node_modules` | npm local packages |
 | `/home/opencode/.local/bin` | pipx binaries |
 | `/home/opencode/.config` | Application configs |
 
@@ -103,7 +98,6 @@ CMD ["opencode"]
 
 | Variable | Default | Role |
 | :--- | :--- | :--- |
-| `NVM_VERSION` | `v0.40.4` | NVM release tag |
 | `UV_VERSION` | `0.11.26` | uv version constraint |
 | `OPENCODE_ENABLE_EXA` | *(unset)* | Enable Exa web tools at runtime |
 
@@ -134,8 +128,7 @@ CMD ["opencode"]
 
 | Dependency | Source | Purpose |
 | :--- | :--- | :--- |
-| `debian:stable-slim` | Docker Hub | Base OS image |
-| `nvm-sh/nvm` (GitHub) | `https://github.com/nvm-sh/nvm` | Node version manager |
+| `node:26` | Docker Hub | Base OS + Node.js runtime |
 | `opencode-ai` | npm (latest) | OpenCode agent CLI |
 | `@biomejs/biome` | npm (latest) | Fast formatter/linter |
 | `uv` | PyPI (via pipx) | Python package manager |
@@ -143,6 +136,7 @@ CMD ["opencode"]
 | `ruff` | PyPI (via uv tool) | Python linter/formatter |
 | `ralph-loop` | GitHub (via uv tool) | Custom tool |
 | `gitsem` | GitHub (via uv tool) | Custom tool |
+| `@playwright/mcp` | npm (latest) | Browser automation via MCP |
 
 ## Error Boundaries
 
@@ -151,6 +145,7 @@ CMD ["opencode"]
 - Helper functions (`install_npm_package`, `install_uv_tool`) encapsulate installation logic with upgrade support.
 - Upgrade mode exits with code 1 to distinguish from normal operation.
 - `tini` handles SIGINT/SIGTERM forwarding; no custom signal traps needed.
+- Volume data from `debian:stable-slim` base image is incompatible with `node:26`; users must recreate the volume.
 
 ## Security Model
 

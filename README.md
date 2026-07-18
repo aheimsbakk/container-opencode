@@ -39,7 +39,7 @@ If you want to enable Exa web tools at runtime, add `-e OPENCODE_ENABLE_EXA=1` t
 Run directly (interactive):
 
 ```bash
-podman run --rm --userns=keep-id -ti \
+podman run --rm --userns=keep-id -ti --shm-size=2gb \
   -v opencode:/home/opencode \
   -v "$PWD":/work \
   -v "$HOME"/.gitconfig:/home/opencode/.gitconfig \
@@ -49,7 +49,7 @@ podman run --rm --userns=keep-id -ti \
 With Exa enabled:
 
 ```bash
-podman run --rm --userns=keep-id -ti \
+podman run --rm --userns=keep-id -ti --shm-size=2gb \
   -e OPENCODE_ENABLE_EXA=1 \
   -v opencode:/home/opencode \
   -v "$PWD":/work \
