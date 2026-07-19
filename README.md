@@ -59,8 +59,8 @@ podman run --rm --userns=keep-id -ti --shm-size=2gb \
 Setup aliases (replace if changed)
 
 ```bash
-OC="alias oc='podman run --hostname vibe --name opencode --rm --userns=keep-id -ti -v opencode:/home/opencode -v \"\$PWD\":/work -v \"\$HOME\"/.gitconfig:/home/opencode/.gitconfig opencode:latest'"
-OCW="alias ocw='podman run --hostname vibe --name opencode --rm --userns=keep-id -ti -p 4096:4096 -v opencode:/home/opencode -v \"\$PWD\":/work -v \"\$HOME\"/.gitconfig:/home/opencode/.gitconfig opencode:latest opencode web --hostname 0.0.0.0'"
+OC="alias oc='podman run --hostname vibe --name opencode --rm --userns=keep-id -ti --shm-size=2gb -v opencode:/home/opencode -v \"\$PWD\":/work -v \"\$HOME\"/.gitconfig:/home/opencode/.gitconfig opencode:latest'"
+OCW="alias ocw='podman run --hostname vibe --name opencode --rm --userns=keep-id -ti --shm-size=2gb -p 4096:4096 -v opencode:/home/opencode -v \"\$PWD\":/work -v \"\$HOME\"/.gitconfig:/home/opencode/.gitconfig opencode:latest opencode web --hostname 0.0.0.0'"
 grep -q "^alias oc=" ~/.bashrc && sed -i "s|^alias oc=.*|$OC|" ~/.bashrc || echo "$OC" >> ~/.bashrc
 grep -q "^alias ocw=" ~/.bashrc && sed -i "s|^alias ocw=.*|$OCW|" ~/.bashrc || echo "$OCW" >> ~/.bashrc
 source ~/.bashrc
