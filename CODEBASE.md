@@ -19,11 +19,17 @@
 .
 ├── AGENTS.md                        # Master rules and workflow for AI agents
 ├── BLUEPRINT.md                     # Language-agnostic architecture specification
+├── CHANGELOG.md                     # Version history
 ├── CODEBASE.md                      # This file — concrete file-to-component mapping
 ├── Containerfile                    # Image build definition
 ├── container-init.sh                # Runtime initialization script (entrypoint)
 ├── opencode.json                    # OpenCode agent configuration
 ├── README.md                        # User-facing documentation
+├── VERSION                          # Current version number
+├── scripts/
+│   ├── bump-version.sh              # Version increment helper
+│   ├── validate-changelog.sh        # VERSION/CHANGELOG consistency check
+│   └── verify_codebase_sync.sh      # CODEBASE.md path verification
 └── .opencode/
     └── RULES.md                     # Project-specific rules (referenced by opencode.json)
 ```
@@ -78,12 +84,12 @@
 | `opencode.json` | OpenCode agent config (formatter, LSP, snapshot, instructions) |
 
 **Key settings:**
-- `autoupdate: "notify"` — Update notification behavior
+- `autoupdate: false` — Update notification disabled
 - `formatter: true` — Enable formatting
 - `lsp: true` — Enable language server protocol
 - `share: "manual"` — Manual share mode
 - `snapshot: true` — Enable snapshots
-- `instructions: [".opencode/RULES.md"]` — Rule file reference
+- `instructions: [".opencode/RULES.md", "AGENTS.md"]` — Rule file references
 
 ### Documentation Files
 

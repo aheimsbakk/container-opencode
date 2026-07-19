@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.2.2] - 2026-07-19
+
+- **why:** Fix documentation inconsistencies between code and docs
+- **model:** deepseek/deepseek-v4-flash
+- **tags:** docs, sync, blueprint, codebase
+
+### Added
+
+- Create `scripts/verify_codebase_sync.sh` to validate CODEBASE.md path references
+- Add `o2cfg` to BLUEPRINT.md External Dependencies table
+- Add `o2cfg` and `@playwright/cli` to README.md upgrade package list
+
+### Fixed
+
+- Sync CODEBASE.md `autoupdate` value with opencode.json (`"notify"` → `false`)
+- Sync CODEBASE.md `instructions` with opencode.json (add missing `AGENTS.md` reference)
+- Add missing `scripts/` directory and `CHANGELOG.md`, `VERSION` files to CODEBASE.md directory tree
+
 ## [0.2.1] - 2026-07-19
 
 - **why:** Add playwright-cli browser automation and sync documentation

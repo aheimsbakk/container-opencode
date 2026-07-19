@@ -5,7 +5,7 @@
 ## Introduction
 This repository provides a container setup for running OpenCode in a relaxed, "safe-vibe" development environment. It ensures a reproducible workspace while protecting your host system and keeping dependencies isolated.
 
-The image is based on `debian:stable-slim` for a minimal footprint. Developer tools (Node via NVM, opencode-ai, Biome, playwright-cli, uv, pipenv, ruff, ralph-loop, gitsem, o2cfg) are installed at first container start and persisted in the `/home/opencode` named volume, so subsequent starts are fast.
+The image is based on `node:26` for a minimal footprint. Developer tools (opencode-ai, Biome, playwright-cli, uv, pipenv, ruff, ralph-loop, gitsem, o2cfg) are installed at first container start and persisted in the `/home/opencode` named volume, so subsequent starts are fast.
 
 ## Prerequisites
 - Podman (rootless recommended). Minimum tested: Podman 4.x.
@@ -20,7 +20,7 @@ Build the image:
 podman build --no-cache -t opencode:latest .
 ```
 
-`NVM_VERSION` and `UV_VERSION` are pinned via `ENV` variables in the `Containerfile` and can be overridden at build time with `--build-arg`:
+`UV_VERSION` is pinned via an `ENV` variable in the `Containerfile` and can be overridden at build time with `--build-arg`:
 
 ```bash
 podman build --no-cache --build-arg UV_VERSION=0.11.26 -t opencode:latest .
@@ -29,7 +29,6 @@ podman build --no-cache --build-arg UV_VERSION=0.11.26 -t opencode:latest .
 ### Build-arg / ENV Reference
 | Variable | Default | Description |
 | :--- | :--- | :--- |
-| `NVM_VERSION` | `v0.40.4` | NVM release to install. |
 | `UV_VERSION` | `0.11.26` | pipx version constraint for `uv`. |
 
 If you want to enable Exa web tools at runtime, add `-e OPENCODE_ENABLE_EXA=1` to your `podman run` command.
@@ -69,7 +68,7 @@ source ~/.bashrc
 
 ### Upgrading software
 
-Pass `upgrade` as the first argument to force-reinstall all managed packages (opencode-ai, Biome, uv, pipenv, ruff, ralph-loop, gitsem). The container exits after the upgrade is complete.
+Pass `upgrade` as the first argument to force-reinstall all managed packages (opencode-ai, Biome, playwright-cli, uv, pipenv, ruff, ralph-loop, gitsem, o2cfg). The container exits after the upgrade is complete.
 
 ```bash
 podman run --rm --userns=keep-id -ti \

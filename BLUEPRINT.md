@@ -16,7 +16,7 @@ Provide an isolated, reproducible development environment for the OpenCode agent
 Container Image (node:26)
 ├── Base OS Layer
 │   ├── Node.js 26 (Debian-based)
-│   └── APT packages (bash-completion, bc, ca-certificates, curl, file, gcc, git, gnupg, golang, govulncheck, iputils-ping, jq, less, libc6-dev, locales, lsof, man-db, nano, pipx, procps, ripgrep, rsync, shfmt, tini, tree, unzip, vim, xxd, zip, Playwright deps)
+│   └── APT packages (bash-completion, bc, ca-certificates, curl, file, gawk, gcc, git, gnupg, golang, govulncheck, iputils-ping, jq, less, libc6-dev, locales, lsof, man-db, nano, pipx, procps, ripgrep, rsync, shfmt, tini, tree, unzip, vim, xxd, zip, Playwright deps)
 ├── Environment Configuration
 │   ├── ENV variables (UV_VERSION, DEBIAN_FRONTEND, LANG, LC_ALL, HOME, PATH, TERM, EDITOR, CGO_ENABLED)
 │   ├── Locale setup (nb_NO.UTF-8, en_US.UTF-8)
@@ -136,6 +136,7 @@ CMD ["opencode"]
 | `ruff` | PyPI (via uv tool) | Python linter/formatter |
 | `ralph-loop` | GitHub (via uv tool) | Custom tool |
 | `gitsem` | GitHub (via uv tool) | Custom tool |
+| `o2cfg` | GitHub (via uv tool) | Custom tool |
 | `@playwright/cli` | npm (latest) | Browser automation CLI (playwright-cli) |
 | `@playwright/mcp` | npm (latest) | Browser automation via MCP |
 
