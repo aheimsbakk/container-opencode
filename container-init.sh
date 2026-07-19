@@ -29,6 +29,7 @@ install_npm_package() {
 
 install_npm_package opencode-ai
 install_npm_package "@biomejs/biome"
+install_npm_package "@playwright/cli@latest"
 
 # Set PATH to node modules
 grep -q node_modules /home/opencode/.profile || echo 'PATH=$HOME/node_modules/.bin:$PATH' >> /home/opencode/.profile
