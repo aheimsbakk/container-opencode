@@ -14,22 +14,26 @@ PATH=$HOME/.local/bin:$HOME/node_modules/.bin:$PATH
 # Install skeleton
 rsync -ur /etc/skel/ /home/opencode/
 
+# Work in the home folder
+cd $HOME
+
 # Minimum age set to one week
 npm config set min-release-age 7 --location=user
 
 # Install node packages
 install_npm_package() {
-	cd $HOME
 	if ! npm list "$1" &>/dev/null || [[ "$UPGRADE" == "true" ]]; then
 		echo "[init] Installing $1..."
 		npm i "$1"
 	fi
-	cd /work
 }
 
 install_npm_package opencode-ai
 install_npm_package "@biomejs/biome"
 install_npm_package "@playwright/cli@latest"
+
+# Install the playwright skill in home folder, including browser
+test -f $HOME/.claude/skills/playwright-cli/SKILL.md || playwright-cli install --skills
 
 # Set PATH to node modules
 grep -q node_modules /home/opencode/.profile || echo 'PATH=$HOME/node_modules/.bin:$PATH' >> /home/opencode/.profile
@@ -58,6 +62,9 @@ install_uv_tool o2cfg "git+https://github.com/aheimsbakk/o2cfg"
 if [[ "${1,,}" == "upgrade" ]]; then
 	exit 1
 fi
+
+# Go back to /work
+cd /work
 
 # Start
 if [ $# -eq 0 ]; then

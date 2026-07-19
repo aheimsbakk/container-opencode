@@ -8,10 +8,10 @@
     "playwright": {
       "type": "local",
       "command": ["npx", "-y", "@playwright/mcp@latest", "--browser", "chromium"],
-      "enabled": true
+      "enabled": false
     }
   },
-  "autoupdate": "notify",
+  "autoupdate": false,
   "formatter": true,
   "lsp": true,
   "share": "manual",

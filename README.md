@@ -5,7 +5,7 @@
 ## Introduction
 This repository provides a container setup for running OpenCode in a relaxed, "safe-vibe" development environment. It ensures a reproducible workspace while protecting your host system and keeping dependencies isolated.
 
-The image is based on `debian:stable-slim` for a minimal footprint. Developer tools (Node via NVM, opencode-ai, Biome, uv, pipenv, ruff, ralph-loop, gitsem) are installed at first container start and persisted in the `/home/opencode` named volume, so subsequent starts are fast.
+The image is based on `debian:stable-slim` for a minimal footprint. Developer tools (Node via NVM, opencode-ai, Biome, playwright-cli, uv, pipenv, ruff, ralph-loop, gitsem, o2cfg) are installed at first container start and persisted in the `/home/opencode` named volume, so subsequent starts are fast.
 
 ## Prerequisites
 - Podman (rootless recommended). Minimum tested: Podman 4.x.
@@ -84,6 +84,24 @@ oc upgrade
 ```
 
 > **Note:** The upgrade run exits with a non-zero status code by design. This distinguishes an upgrade invocation from a normal interactive session and prevents accidentally continuing into a shell after the upgrade.
+
+### Browser Automation (playwright-cli)
+
+playwright-cli is a command-line tool for browser automation, pre-installed in this container. It lets the opencode agent interact with web pages programmatically.
+
+#### Installing additional browsers
+
+Chromium is installed by default. To install other browsers:
+
+```bash
+playwright-cli install-browser firefox
+playwright-cli install-browser webkit
+playwright-cli install-browser msedge
+```
+
+#### Using with opencode
+
+Simply ask the agent to perform browser tasks—it will use playwright-cli automatically.
 
 ### Flag Reference
 | Flag | Description |

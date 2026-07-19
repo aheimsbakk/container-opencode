@@ -5,7 +5,7 @@
 Provide an isolated, reproducible development environment for the OpenCode agent. The container:
 
 - Runs on a Node.js 26 base image.
-- Installs and persists a toolchain (opencode-ai, Biome, uv, pipenv, ruff, Playwright/MCP) on first start.
+- Installs and persists a toolchain (opencode-ai, Biome, playwright-cli, uv, pipenv, ruff, ralph-loop, gitsem, o2cfg) on first start.
 - Mounts a host directory into `/work` for live editing.
 - Persists user data in a named volume at `/home/opencode`.
 - Uses `tini` as PID 1 for proper signal forwarding and zombie reaping.
@@ -23,7 +23,7 @@ Container Image (node:26)
 │   └── Shell niceties (bash-completion, aliases)
 ├── Runtime Installer (`container-init.sh`)
 │   ├── Skeleton copy (/etc/skel → /home/opencode)
-│   ├── npm local packages via `install_npm_package` helper (opencode-ai, @biomejs/biome)
+│   ├── npm local packages via `install_npm_package` helper (opencode-ai, @biomejs/biome, @playwright/cli)
 │   ├── pipx packages (uv)
 │   ├── uv tool packages via `install_uv_tool` helper (pipenv, ruff, ralph-loop, gitsem, o2cfg)
 │   └── Shell launch (exec bash -l or exec bash -l -c "$*")
@@ -136,6 +136,7 @@ CMD ["opencode"]
 | `ruff` | PyPI (via uv tool) | Python linter/formatter |
 | `ralph-loop` | GitHub (via uv tool) | Custom tool |
 | `gitsem` | GitHub (via uv tool) | Custom tool |
+| `@playwright/cli` | npm (latest) | Browser automation CLI (playwright-cli) |
 | `@playwright/mcp` | npm (latest) | Browser automation via MCP |
 
 ## Error Boundaries

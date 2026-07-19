@@ -10,7 +10,7 @@
 | Shell | Bash (login shell) |
 | Node Manager | Built-in (node:26 base) |
 | Python Package Mgr | pipx (uv), uv tool (pipenv, ruff, ralph-loop, gitsem) |
-| npm Packages | opencode-ai, @biomejs/biome |
+| npm Packages | opencode-ai, @biomejs/biome, @playwright/cli |
 | Config Format | JSON (opencode.json) |
 
 ## Directory Tree
@@ -63,7 +63,7 @@
 - Line 15: Skeleton copy (`rsync /etc/skel → /home/opencode`)
 - Line 18: npm config (`min-release-age 7 --location=user`)
 - Lines 21–28: `install_npm_package` helper function (local install, cd to $HOME, cd /work)
-- Lines 30–31: npm local packages (opencode-ai, @biomejs/biome)
+- Lines 30–32: npm local packages (opencode-ai, @biomejs/biome, @playwright/cli)
 - Line 34: Append node_modules PATH to `.profile`
 - Lines 37–40: uv installation via pipx (conditional on upgrade or missing)
 - Lines 43–49: `install_uv_tool` helper function (`_UPGRADE` variable, `--exclude-newer 1 week`)
@@ -165,6 +165,7 @@ podman run --rm --userns=keep-id -ti \
 | `node:26` | Base image | Docker Hub | `26` tag |
 | opencode-ai | npm package | `container-init.sh` line 25 | npm default |
 | @biomejs/biome | npm package | `container-init.sh` line 26 | npm default |
+| @playwright/cli | npm package (CLI) | `container-init.sh` line 31 | `@latest` |
 | @playwright/mcp | npm package (MCP) | `opencode.json` | `@latest` |
 | uv | pipx package | `container-init.sh` line 34 | `ENV UV_VERSION` (`0.11.26`) |
 | pipenv | uv tool | `container-init.sh` line 51 | latest |

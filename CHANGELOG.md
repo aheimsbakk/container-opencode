@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.2.1] - 2026-07-19
+
+- **why:** Add playwright-cli browser automation and sync documentation
+- **model:** deepseek-v4-flash-free
+- **tags:** docs, playwright, sync
+
+### Added
+
+- Add `playwright-cli` section to `README.md` with browser installation instructions
+- Add `@playwright/cli` npm package and skill installation to `container-init.sh`
+
+### Changed
+
+- Sync `BLUEPRINT.md` and `CODEBASE.md` with `@playwright/cli` and `o2cfg` tool references
+- Add `o2cfg` to developer tools list in `README.md` intro
+
 ## [0.2.0] - 2026-07-18
 
 - **why:** Add Playwright browser automation via MCP and switch base image to node:26
