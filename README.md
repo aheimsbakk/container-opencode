@@ -72,13 +72,21 @@ source ~/.bashrc
 | `--rm` | Remove the container automatically when it exits. |
 | `--userns=keep-id` | Map the container user to your host user (keeps file ownership sane). |
 | `-ti` | Allocate a TTY and run an interactive terminal session. |
+| `--hostname vibe` | Sets the container hostname to `vibe`. |
+| `--name opencode` | Assigns the name `opencode` to the container instance. |
+| `--shm-size=2gb` | Increases shared memory size (required for stable browser automation). |
+| `-p 4096:4096` | Maps host port 4096 to container port 4096 (used for opencode web mode). |
 | `-v opencode:/home...` | Persist OpenCode home data in a named volume between sessions. |
 | `-v "$PWD":/work` | Mount current directory to `/work` so edits are visible on the host. |
 | `-v .../.gitconfig` | Share host git configuration (identity/settings) with the container. |
+| `-e OPENCODE_ENABLE_EXA=1` | Enables Exa web search tools within the container. |
 
 ### Upgrading software
 
 Pass `upgrade` as the first argument to force-reinstall all managed packages (opencode-ai, Biome, playwright-cli, uv, pipenv, ruff, ralph-loop, gitsem, o2cfg). The container exits after the upgrade is complete.
+
+> [!NOTE]
+> Only versions older than 7D will be installed. Minimum release age is configured both for `npm` and `uv`.
 
 ```bash
 podman run --rm --userns=keep-id -ti \
