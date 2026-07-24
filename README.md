@@ -85,9 +85,6 @@ source ~/.bashrc
 
 Pass `upgrade` as the first argument to force-reinstall all managed packages (opencode-ai, Biome, playwright-cli, uv, pipenv, ruff, ralph-loop, gitsem, o2cfg). The container exits after the upgrade is complete.
 
-> [!NOTE]
-> Only versions older than 7D will be installed. Minimum release age is configured both for `npm` and `uv`.
-
 ```bash
 podman run --rm --userns=keep-id -ti \
   -v opencode:/home/opencode \
@@ -99,6 +96,8 @@ If you have the `oc` alias set up:
 ```bash
 oc upgrade
 ```
+
+> **Important:** Only versions older than 7D will be installed. Minimum release age is configured both for `npm` and `uv`.
 
 > **Note:** The upgrade run exits with a non-zero status code by design. This distinguishes an upgrade invocation from a normal interactive session and prevents accidentally continuing into a shell after the upgrade.
 
