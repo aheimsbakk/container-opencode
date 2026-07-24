@@ -66,6 +66,16 @@ grep -q "^alias ocw=" ~/.bashrc && sed -i "s|^alias ocw=.*|$OCW|" ~/.bashrc || e
 source ~/.bashrc
 ```
 
+### Flag Reference
+| Flag | Description |
+| :--- | :--- |
+| `--rm` | Remove the container automatically when it exits. |
+| `--userns=keep-id` | Map the container user to your host user (keeps file ownership sane). |
+| `-ti` | Allocate a TTY and run an interactive terminal session. |
+| `-v opencode:/home...` | Persist OpenCode home data in a named volume between sessions. |
+| `-v "$PWD":/work` | Mount current directory to `/work` so edits are visible on the host. |
+| `-v .../.gitconfig` | Share host git configuration (identity/settings) with the container. |
+
 ### Upgrading software
 
 Pass `upgrade` as the first argument to force-reinstall all managed packages (opencode-ai, Biome, playwright-cli, uv, pipenv, ruff, ralph-loop, gitsem, o2cfg). The container exits after the upgrade is complete.
@@ -84,12 +94,20 @@ oc upgrade
 
 > **Note:** The upgrade run exits with a non-zero status code by design. This distinguishes an upgrade invocation from a normal interactive session and prevents accidentally continuing into a shell after the upgrade.
 
-### Browser Automation (playwright-cli)
+### Signal Handling (CTRL+C)
+`tini` is installed in the image and set as `ENTRYPOINT` PID 1. It properly reaps zombie processes and forwards `SIGINT`/`SIGTERM` to child processes, so **CTRL+C works in both interactive TUI mode and headless web-server mode** without any extra runtime flags.
 
-playwright-cli is a command-line tool for browser automation, pre-installed in this container. It lets the opencode agent interact with web pages programmatically.
+If you prefer to use the runtime-injected init (equivalent behaviour, no image rebuild required), pass `--init` to `podman run` — but this is redundant when using this image since `tini` is already baked in.
+
+## Installed software
+
+### Web Toolchain ([Biome](https://github.com/biomejs/biome))
+Fast linter and formatter for web projects (JavaScript, TypeScript, JSON, etc.).
+
+### Browser Automation ([playwright-cli](https://github.com/microsoft/playwright-cli))
+CLI for browser automation, optimized for coding agents to interact with web pages via a token-efficient, skill-based interface.
 
 #### Installing additional browsers
-
 Chromium is installed by default. To install other browsers:
 
 ```bash
@@ -99,23 +117,25 @@ playwright-cli install-browser msedge
 ```
 
 #### Using with opencode
+Simply ask the agent to perform browser tasks—it will use `playwright-cli` automatically.
 
-Simply ask the agent to perform browser tasks—it will use playwright-cli automatically.
+### Python Package Management
+* **[uv](https://github.com/astral-sh/uv)**: Extremely fast Python package and project manager.
+* **[pipenv](https://github.com/pypa/pipenv)**: Tool for managing Python dependencies and virtual environments.
 
-### Flag Reference
-| Flag | Description |
-| :--- | :--- |
-| `--rm` | Remove the container automatically when it exits. |
-| `--userns=keep-id` | Map the container user to your host user (keeps file ownership sane). |
-| `-ti` | Allocate a TTY and run an interactive terminal session. |
-| `-v opencode:/home...` | Persist OpenCode home data in a named volume between sessions. |
-| `-v "$PWD":/work` | Mount current directory to `/work` so edits are visible on the host. |
-| `-v .../.gitconfig` | Share host git configuration (identity/settings) with the container. |
+### Python Linting & Formatting ([Ruff](https://github.com/astral-sh/ruff))
+Extremely fast Python linter and code formatter.
 
-### Signal Handling (CTRL+C)
-`tini` is installed in the image and set as `ENTRYPOINT` PID 1. It properly reaps zombie processes and forwards `SIGINT`/`SIGTERM` to child processes, so **CTRL+C works in both interactive TUI mode and headless web-server mode** without any extra runtime flags.
+### AI Iteration Loop ([ralph-loop](https://github.com/aheimsbakk/ralph-loop))
+A utility to loop commands until they signal completion via a "promise" (e.g., `<promise>DONE</promise>`), enabling autonomous AI agent iterations.
 
-If you prefer to use the runtime-injected init (equivalent behaviour, no image rebuild required), pass `--init` to `podman run` — but this is redundant when using this image since `tini` is already baked in.
+### Git Versioning ([gitsem](https://github.com/aheimsbakk/gitsem))
+Command-line utility for managing semantically versioned (SemVer) Git tags.
+
+### OpenCode Configuration ([o2cfg](https://github.com/aheimsbakk/o2cfg))
+Generates OpenCode provider configurations by auto-discovering models from OpenAI-compatible APIs.
+
+
 
 ## Troubleshooting
 - If Podman is not found, install Podman for your distribution or use Docker as an alternative (adjust flags). 
