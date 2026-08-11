@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.3.0] - 2026-08-11
+
+- **why:** Add openscad, xauth, xvfb to container and sync intent-based commenting rule
+- **model:** kompis/qwen-3.6-think-coding-mtp
+- **tags:** container, rules, docs
+
+### Added
+
+- Add `openscad`, `xauth`, `xvfb` to container packages (`Containerfile`)
+- Add rule 27 (intent-based commenting) to `.opencode/RULES.md`
+
+### Changed
+
+- Comment out playwright MCP configuration in `opencode.json`
+
 ## [0.2.2] - 2026-07-19
 
 - **why:** Fix documentation inconsistencies between code and docs

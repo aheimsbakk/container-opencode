@@ -41,6 +41,7 @@ RUN apt-get update && \
       lsof \
       man-db \
       nano \
+      openscad \
       pipx \
       procps \
       ripgrep \
@@ -50,6 +51,8 @@ RUN apt-get update && \
       tree \
       unzip \
       vim \
+      xauth \
+      xvfb \
       xxd \
       zip \
       && \
