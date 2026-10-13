@@ -21,17 +21,24 @@
 ├── BLUEPRINT.md                     # Language-agnostic architecture specification
 ├── CHANGELOG.md                     # Version history
 ├── CODEBASE.md                      # This file — concrete file-to-component mapping
+├── CONTRIBUTING.md                  # Developer guide (scripts, tooling, workflow)
 ├── Containerfile                    # Image build definition
 ├── container-init.sh                # Runtime initialization script (entrypoint)
 ├── opencode.json                    # OpenCode agent configuration
 ├── README.md                        # User-facing documentation
 ├── VERSION                          # Current version number
+├── docs/
+│   └── memory/
+│       ├── INDEX.md                 # Memory skill index
+│       └── archive/                 # Memory entries (decision log)
 ├── scripts/
 │   ├── bump-version.sh              # Version increment helper
 │   ├── validate-changelog.sh        # VERSION/CHANGELOG consistency check
-│   └── verify_codebase_sync.sh      # CODEBASE.md path verification
+│   └── verify_codebase_sync.sh      # CODEBASE.md path and line-reference verification
 └── .opencode/
-    └── RULES.md                     # Project-specific rules (referenced by opencode.json)
+    ├── RULES.md                     # Project-specific rules (referenced by opencode.json)
+    ├── agents/                      # OpenCode agent definitions
+    └── skills/                      # OpenCode skills (clear-language, memory, todo-txt, wrap-up)
 ```
 
 ## Physical Path Mappings
@@ -64,18 +71,19 @@
 | `container-init.sh` | Runtime Installer (npm local, pipx, uv, shell launch) |
 
 **Key logic blocks:**
-- Lines 1–9: Upgrade flag detection (`$1 == "upgrade"`)
+- Lines 4–9: Upgrade flag detection (`UPGRADE=true`)
 - Line 12: PATH prepended with `$HOME/.local/bin` and `$HOME/node_modules/.bin`
-- Line 15: Skeleton copy (`rsync /etc/skel → /home/opencode`)
-- Line 18: npm config (`min-release-age 7 --location=user`)
-- Lines 21–28: `install_npm_package` helper function (local install, cd to $HOME, cd /work)
-- Lines 30–32: npm local packages (opencode-ai, @biomejs/biome, @playwright/cli)
-- Line 34: Append node_modules PATH to `.profile`
-- Lines 37–40: uv installation via pipx (conditional on upgrade or missing)
-- Lines 43–49: `install_uv_tool` helper function (`_UPGRADE` variable, `--exclude-newer 1 week`)
-- Lines 51–55: uv tool packages (pipenv, ruff, ralph-loop, gitsem, o2cfg)
-- Lines 57–59: Upgrade exit logic (exit 1)
-- Lines 62–66: Shell launch (`exec bash -l` or `exec bash -l -c "$*"`)
+- Line 15: Skeleton copy (`rsync -ur /etc/skel/`)
+- Line 21: npm config (`min-release-age 7 --location=user`)
+- Lines 24–29: `install_npm_package` helper function (local install, cd to $HOME, cd /work)
+- Lines 31–33: npm local packages (`opencode-ai`, `@biomejs/biome`, `@playwright/cli@latest`)
+- Lines 35–36: playwright-cli skill install (`playwright-cli install --skills`)
+- Line 39: Append node_modules PATH to `.profile`
+- Lines 41–45: uv installation via pipx (`pipx install --force`, conditional on upgrade or missing)
+- Lines 47–54: `install_uv_tool` helper function (`_UPGRADE` variable, `--exclude-newer 1 week`)
+- Lines 56–60: uv tool packages (`pipenv`, `ruff`, `ralph-loop`, `gitsem`, `o2cfg`)
+- Lines 62–64: Upgrade exit logic (`exit 1`)
+- Lines 70–74: Shell launch (`exec bash -l` or `exec bash -l -c "$*"`)
 
 ### opencode.json → Agent Configuration
 
@@ -96,8 +104,12 @@
 | File | Purpose |
 | :--- | :--- |
 | `README.md` | User-facing guide (build, run, upgrade, troubleshooting, security) |
+| `CONTRIBUTING.md` | Developer guide (scripts, tooling, workflow) |
+| `CHANGELOG.md` | Version history with why/model/tags entries per release |
+| `VERSION` | Current release number, validated against CHANGELOG.md |
 | `AGENTS.md` | Agent workflow rules (blueprint → implementation → sync) |
 | `.opencode/RULES.md` | Project-specific constraints (security, scoping, architecture, documentation) |
+| `docs/memory/INDEX.md` | Memory skill index (entries under `docs/memory/archive/`) |
 
 ## Entry Points
 
@@ -127,7 +139,7 @@ podman build --no-cache --build-arg UV_VERSION=0.11.26 -t opencode:latest .
 ### Run (Interactive)
 
 ```bash
-podman run --rm --userns=keep-id -ti \
+podman run --rm --userns=keep-id -ti --shm-size=2gb \
   -v opencode:/home/opencode \
   -v "$PWD":/work \
   -v "$HOME"/.gitconfig:/home/opencode/.gitconfig \
@@ -137,7 +149,7 @@ podman run --rm --userns=keep-id -ti \
 ### Run (Web Server)
 
 ```bash
-podman run --rm --userns=keep-id -ti \
+podman run --rm --userns=keep-id -ti --shm-size=2gb \
   -p 4096:4096 \
   -v opencode:/home/opencode \
   -v "$PWD":/work \
@@ -169,16 +181,16 @@ podman run --rm --userns=keep-id -ti \
 | Dependency | Type | Location | Version Source |
 | :--- | :--- | :--- | :--- |
 | `node:26` | Base image | Docker Hub | `26` tag |
-| opencode-ai | npm package | `container-init.sh` line 25 | npm default |
-| @biomejs/biome | npm package | `container-init.sh` line 26 | npm default |
-| @playwright/cli | npm package (CLI) | `container-init.sh` line 31 | `@latest` |
-| @playwright/mcp | npm package (MCP) | `opencode.json` | `@latest` |
-| uv | pipx package | `container-init.sh` line 34 | `ENV UV_VERSION` (`0.11.26`) |
-| pipenv | uv tool | `container-init.sh` line 51 | latest |
-| ruff | uv tool | `container-init.sh` line 52 | latest |
-| ralph-loop | uv tool (git) | `container-init.sh` line 53 | unpinned git URL |
-| gitsem | uv tool (git) | `container-init.sh` line 54 | unpinned git URL |
-| o2cfg | uv tool (git) | `container-init.sh` line 55 | unpinned git URL |
+| opencode-ai | npm package | `container-init.sh` line 31 | npm default |
+| @biomejs/biome | npm package | `container-init.sh` line 32 | npm default |
+| @playwright/cli | npm package (CLI) | `container-init.sh` line 33 | `@latest` |
+| @playwright/mcp | npm package (MCP) | `opencode.json` (commented out, disabled) | `@latest` |
+| uv | pipx package | `container-init.sh` lines 42–44 (`pipx install --force`) | `ENV UV_VERSION` (`0.11.26`) |
+| pipenv | uv tool | `container-init.sh` line 56 | latest |
+| ruff | uv tool | `container-init.sh` line 57 | latest |
+| ralph-loop | uv tool (git) | `container-init.sh` line 58 | unpinned git URL |
+| gitsem | uv tool (git) | `container-init.sh` line 59 | unpinned git URL |
+| o2cfg | uv tool (git) | `container-init.sh` line 60 | unpinned git URL |
 | tini | Init process | APT package | Debian stable repo |
 | pipx | Python package installer | APT package | Debian stable repo |
 

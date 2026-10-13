@@ -142,6 +142,13 @@ Command-line utility for managing semantically versioned (SemVer) Git tags.
 ### OpenCode Configuration ([o2cfg](https://github.com/aheimsbakk/o2cfg))
 Generates OpenCode provider configurations by auto-discovering models from OpenAI-compatible APIs.
 
+### CAD and Headless Display (OpenSCAD, xauth, Xvfb)
+* **OpenSCAD**: 3D modeling application for programmable CAD models.
+* **xauth**: X server authentication utility.
+* **Xvfb**: virtual X server, so GUI and browser workloads run headless inside the container.
+
+These are baked into the image at build time (APT packages), not installed at first start.
+
 
 
 ## Troubleshooting

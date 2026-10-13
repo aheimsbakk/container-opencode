@@ -16,7 +16,7 @@ Provide an isolated, reproducible development environment for the OpenCode agent
 Container Image (node:26)
 ├── Base OS Layer
 │   ├── Node.js 26 (Debian-based)
-│   └── APT packages (bash-completion, bc, ca-certificates, curl, file, gawk, gcc, git, gnupg, golang, govulncheck, iputils-ping, jq, less, libc6-dev, locales, lsof, man-db, nano, pipx, procps, ripgrep, rsync, shfmt, tini, tree, unzip, vim, xxd, zip, Playwright deps)
+│   └── APT packages (bash-completion, bc, ca-certificates, curl, file, gawk, gcc, git, gnupg, golang, govulncheck, iputils-ping, jq, less, libc6-dev, locales, lsof, man-db, nano, openscad, pipx, procps, ripgrep, rsync, shfmt, tini, tree, unzip, vim, xauth, xvfb, xxd, zip, Playwright deps)
 ├── Environment Configuration
 │   ├── ENV variables (UV_VERSION, DEBIAN_FRONTEND, LANG, LC_ALL, HOME, PATH, TERM, EDITOR, CGO_ENABLED)
 │   ├── Locale setup (nb_NO.UTF-8, en_US.UTF-8)
@@ -24,6 +24,7 @@ Container Image (node:26)
 ├── Runtime Installer (`container-init.sh`)
 │   ├── Skeleton copy (/etc/skel → /home/opencode)
 │   ├── npm local packages via `install_npm_package` helper (opencode-ai, @biomejs/biome, @playwright/cli)
+│   ├── playwright-cli skill install (`playwright-cli install --skills`, skipped if skill file exists)
 │   ├── pipx packages (uv)
 │   ├── uv tool packages via `install_uv_tool` helper (pipenv, ruff, ralph-loop, gitsem, o2cfg)
 │   └── Shell launch (exec bash -l or exec bash -l -c "$*")
@@ -59,6 +60,7 @@ container-init.sh (PID 1 via tini)
     ├── Check $1 for "upgrade"
     ├── Copy skeleton files
     ├── Install npm packages via helper (if missing or upgrade)
+    ├── Install playwright-cli skill (if skill file missing)
     ├── Install uv via pipx (if missing or upgrade)
     ├── Install uv tool packages via helper (if missing or upgrade)
     └── exec bash -l | exec bash -l -c "$*"
@@ -138,12 +140,12 @@ CMD ["opencode"]
 | `gitsem` | GitHub (via uv tool) | Custom tool |
 | `o2cfg` | GitHub (via uv tool) | Custom tool |
 | `@playwright/cli` | npm (latest) | Browser automation CLI (playwright-cli) |
-| `@playwright/mcp` | npm (latest) | Browser automation via MCP |
+| `@playwright/mcp` | npm (latest) | Browser automation via MCP (config commented out in `opencode.json`, disabled) |
 
 ## Error Boundaries
 
 - `set -e` in `container-init.sh` aborts the init on any command failure.
-- Each package installation uses a conditional check (`command -v` / `npm list`) to avoid redundant installs.
+- Each package installation uses a conditional check (`command -v` / `npm list` / `test -f`) to avoid redundant installs.
 - Helper functions (`install_npm_package`, `install_uv_tool`) encapsulate installation logic with upgrade support.
 - Upgrade mode exits with code 1 to distinguish from normal operation.
 - `tini` handles SIGINT/SIGTERM forwarding; no custom signal traps needed.
