@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.3.1] - 2026-10-13
+
+- **why:** Sync docs with container state and close rule-driven doc gaps
+- **model:** kompis/qwen3.8-flash-next-iq3_s
+- **tags:** docs, sync, rules, scripts
+
+### Added
+
+- Add `CONTRIBUTING.md` with script usage and the developer workflow
+- Add line-reference checks to `scripts/verify_codebase_sync.sh`
+- Track the memory skill index under `docs/memory/`
+- Add OpenSCAD, xauth, and Xvfb section to `README.md`
+
+### Changed
+
+- Sync `BLUEPRINT.md` APT list, playwright-cli skill step, and disabled `@playwright/mcp`
+- Fix stale `container-init.sh` line references and add `--shm-size=2gb` in `CODEBASE.md`
+- Restructure `.opencode/RULES.md` (renumbered rules, commit consent, verification gate, documentation separation)
+
 ## [0.3.0] - 2026-08-11
 
 - **why:** Add openscad, xauth, xvfb to container and sync intent-based commenting rule
