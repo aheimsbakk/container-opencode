@@ -58,6 +58,7 @@
 - `RUN npm config set min-release-age 7 --global` → npm config
 - `RUN locale-gen` → Locale setup
 - `RUN ... /etc/bash.bashrc` → Shell niceties
+- `RUN ln -s ... /usr/local/bin` → CLI symlinks (`fd` → `fdfind`, `bat` → `batcat`)
 - `ADD container-init.sh /` → Init script baked into image
 - `WORKDIR /work` → Working directory
 - `VOLUME ["/work", "/home/opencode"]` → Volume declarations

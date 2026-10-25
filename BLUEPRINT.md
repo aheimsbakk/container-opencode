@@ -16,11 +16,12 @@ Provide an isolated, reproducible development environment for the OpenCode agent
 Container Image (node:26)
 ├── Base OS Layer
 │   ├── Node.js 26 (Debian-based)
-│   └── APT packages (bash-completion, bc, ca-certificates, curl, file, gawk, gcc, git, gnupg, golang, govulncheck, iputils-ping, jq, less, libc6-dev, locales, lsof, man-db, nano, openscad, pipx, procps, ripgrep, rsync, shfmt, tini, tree, unzip, vim, xauth, xvfb, xxd, zip, Playwright deps)
+│   └── APT packages (bash-completion, bat, bc, ca-certificates, curl, dnsutils, entr, fd-find, file, gawk, gcc, git, gnupg, golang, govulncheck, iproute2, iputils-ping, jq, less, libc6-dev, locales, lsof, man-db, nano, netcat-traditional, openscad, parallel, pipx, procps, ripgrep, rsync, shellcheck, shfmt, sqlite3, strace, tini, tree, unzip, vim, xauth, xvfb, xxd, yq, zip, Playwright deps)
 ├── Environment Configuration
 │   ├── ENV variables (UV_VERSION, DEBIAN_FRONTEND, LANG, LC_ALL, HOME, PATH, TERM, EDITOR, CGO_ENABLED)
 │   ├── Locale setup (nb_NO.UTF-8, en_US.UTF-8)
-│   └── Shell niceties (bash-completion, aliases)
+│   ├── Shell niceties (bash-completion, aliases)
+│   └── CLI symlinks (fd → fdfind, bat → batcat)
 ├── Runtime Installer (`container-init.sh`)
 │   ├── Skeleton copy (/etc/skel → /home/opencode)
 │   ├── npm local packages via `install_npm_package` helper (opencode-ai, @biomejs/biome, @playwright/cli)
@@ -44,6 +45,7 @@ Containerfile (multi-step image build)
     ├── APT layer (static, cached)
     ├── Locale layer (static)
     ├── Shell config layer (static)
+    ├── CLI symlinks layer (fd, bat)
     └── Init script baked into image (/container-init.sh)
     │
     ▼

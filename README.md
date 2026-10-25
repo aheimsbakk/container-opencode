@@ -149,7 +149,20 @@ Generates OpenCode provider configurations by auto-discovering models from OpenA
 
 These are baked into the image at build time (APT packages), not installed at first start.
 
+### CLI Productivity and Debugging Tools
+* **bat**: file viewer with syntax highlighting, aliased from `batcat`.
+* **fd**: fast file finder, aliased from `fd-find`.
+* **entr**: reruns a command when files change.
+* **parallel**: runs commands in parallel across inputs.
+* **shellcheck**: linter for shell scripts.
+* **sqlite3**: command-line shell for SQLite databases.
+* **strace**: traces system calls and signals of a process.
+* **iproute2**: network tooling (`ip`, `ss`).
+* **dnsutils**: DNS lookup tools (`dig`, `nslookup`).
+* **netcat-traditional**: read and write across network connections.
+* **yq**: query and convert YAML, JSON, and other formats (jq-style syntax).
 
+These are baked into the image at build time (APT packages), not installed at first start.
 
 ## Troubleshooting
 - If Podman is not found, install Podman for your distribution or use Docker as an alternative (adjust flags). 
