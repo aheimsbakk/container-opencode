@@ -23,9 +23,13 @@ ENV DEBIAN_FRONTEND="noninteractive" \
 RUN apt-get update && \
     apt-get -y install --no-install-recommends \
       bash-completion \
+      bat \
       bc \
       ca-certificates \
       curl \
+      dnsutils \
+      entr \
+      fd-find \
       file \
       gawk \
       gcc \
@@ -33,6 +37,7 @@ RUN apt-get update && \
       gnupg \
       golang \
       govulncheck \
+      iproute2 \
       iputils-ping \
       jq \
       less \
@@ -41,12 +46,17 @@ RUN apt-get update && \
       lsof \
       man-db \
       nano \
+      netcat-traditional \
       openscad \
+      parallel \
       pipx \
       procps \
       ripgrep \
       rsync \
+      shellcheck \
       shfmt \
+      sqlite3 \
+      strace \
       tini \
       tree \
       unzip \
@@ -54,6 +64,7 @@ RUN apt-get update && \
       xauth \
       xvfb \
       xxd \
+      yq \
       zip \
       && \
     apt-get clean && \
@@ -69,6 +80,10 @@ RUN apt-get update && \
     echo "if [ -f /etc/bash_completion ]; then . /etc/bash_completion; fi" >> /etc/bash.bashrc && \
     echo "alias ls='ls --color=auto'" >> /etc/bash.bashrc && \
     echo "alias grep='grep --color=auto'" >> /etc/bash.bashrc
+
+# Most models like to find fd in path
+RUN ln -s $(which fdfind) /usr/local/bin/fd && \
+    ln -s $(which batcat) /usr/local/bin/bat
 
 # Only install packages that have been relased 7 days ago
 RUN npm config set min-release-age 7 --global
