@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.4.0] - 2026-10-25
+
+- **why:** Add CLI, network, and debugging tools so agents work without extra installs
+- **model:** kompis/qwen3.8-flash-next-iq3_s
+- **tags:** container, tools, apt
+
+### Added
+
+- Add `bat`, `dnsutils`, `entr`, `fd-find`, `iproute2`, `netcat-traditional`, `parallel`, `shellcheck`, `sqlite3`, `strace`, `yq` to the image (`Containerfile`)
+- Add symlinks so `fd` and `bat` resolve on PATH (`fd` → `fdfind`, `bat` → `batcat`)
+- Add "CLI Productivity and Debugging Tools" section to `README.md`
+
+### Changed
+
+- Sync `BLUEPRINT.md` APT list and build layers with the new packages and symlinks
+- Add the `ln -s` step to the Containerfile key sections in `CODEBASE.md`
+
 ## [0.3.1] - 2026-10-13
 
 - **why:** Sync docs with container state and close rule-driven doc gaps
