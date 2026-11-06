@@ -79,7 +79,7 @@ while IFS= read -r line; do
 		for p in $paths; do
 			# Skip non-file paths
 			case "$p" in
-			http://* | https://* | git+* | npm | latest | node:26 | Docker\ Hub | opencode-ai | *@* | *.bin | */*.bin | Debian* | PYPI*) continue ;;
+			http://* | https://* | git+* | npm | latest | node:26 | Docker\ Hub | *@* | *.bin | */*.bin | Debian* | PYPI*) continue ;;
 			esac
 			# Skip paths that are clearly package names or non-file references
 			case "$p" in
@@ -128,7 +128,7 @@ while IFS= read -r line; do
 		;;
 	esac
 
-	# Table rows: "| opencode-ai | npm package | `container-init.sh` line 31 |"
+	# Table rows: "| @opencode/cli | npm package | `container-init.sh` line 31 |"
 	case "$line" in
 	'| '*)
 		range=$(echo "$line" | grep -oP '\blines? \K[0-9]+(?:\s*[–-]\s*[0-9]+)?' || true)

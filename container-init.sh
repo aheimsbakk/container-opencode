@@ -28,7 +28,7 @@ install_npm_package() {
 	fi
 }
 
-install_npm_package opencode-ai
+install_npm_package "@opencode/cli@latest"
 install_npm_package "@biomejs/biome"
 install_npm_package "@playwright/cli@latest"
 
@@ -36,7 +36,7 @@ install_npm_package "@playwright/cli@latest"
 test -f $HOME/.claude/skills/playwright-cli/SKILL.md || playwright-cli install --skills
 
 # Set PATH to node modules
-grep -q node_modules /home/opencode/.profile || echo 'PATH=$HOME/node_modules/.bin:$PATH' >> /home/opencode/.profile
+grep -q node_modules /home/opencode/.profile || echo 'PATH=$HOME/node_modules/.bin:$PATH' >>/home/opencode/.profile
 
 # Install uv via pipx first (required for uv tool install)
 if ! command -v uv &>/dev/null || [[ "${1,,}" == "upgrade" ]]; then
