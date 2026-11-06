@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.5.0] - 2026-11-06
+
+- **why:** Install the current `@opencode/cli` package instead of the legacy `opencode-ai` name
+- **model:** kompis/qwen3.8-flash-next-iq3_s
+- **tags:** opencode, npm, dependencies, sync
+
+### Changed
+
+- Install `@opencode/cli@latest` instead of `opencode-ai` (`container-init.sh` line 31)
+- Update toolchain lists and dependency tables in `BLUEPRINT.md`, `CODEBASE.md`, and `README.md`
+- Drop the stale `opencode-ai` token from `scripts/verify_codebase_sync.sh`
+- Remove worklog references from `.opencode/RULES.md` and the wrap-up skill
+- Record the package switch in `docs/memory/`
+
 ## [0.4.0] - 2026-10-25
 
 - **why:** Add CLI, network, and debugging tools so agents work without extra installs
