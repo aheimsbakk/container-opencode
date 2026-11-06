@@ -5,7 +5,7 @@
 Provide an isolated, reproducible development environment for the OpenCode agent. The container:
 
 - Runs on a Node.js 26 base image.
-- Installs and persists a toolchain (opencode-ai, Biome, playwright-cli, uv, pipenv, ruff, ralph-loop, gitsem, o2cfg) on first start.
+- Installs and persists a toolchain (@opencode/cli, Biome, playwright-cli, uv, pipenv, ruff, ralph-loop, gitsem, o2cfg) on first start.
 - Mounts a host directory into `/work` for live editing.
 - Persists user data in a named volume at `/home/opencode`.
 - Uses `tini` as PID 1 for proper signal forwarding and zombie reaping.
@@ -24,7 +24,7 @@ Container Image (node:26)
 │   └── CLI symlinks (fd → fdfind, bat → batcat)
 ├── Runtime Installer (`container-init.sh`)
 │   ├── Skeleton copy (/etc/skel → /home/opencode)
-│   ├── npm local packages via `install_npm_package` helper (opencode-ai, @biomejs/biome, @playwright/cli)
+│   ├── npm local packages via `install_npm_package` helper (@opencode/cli, @biomejs/biome, @playwright/cli)
 │   ├── playwright-cli skill install (`playwright-cli install --skills`, skipped if skill file exists)
 │   ├── pipx packages (uv)
 │   ├── uv tool packages via `install_uv_tool` helper (pipenv, ruff, ralph-loop, gitsem, o2cfg)
@@ -133,7 +133,7 @@ CMD ["opencode"]
 | Dependency | Source | Purpose |
 | :--- | :--- | :--- |
 | `node:26` | Docker Hub | Base OS + Node.js runtime |
-| `opencode-ai` | npm (latest) | OpenCode agent CLI |
+| `@opencode/cli` | npm (latest) | OpenCode agent CLI |
 | `@biomejs/biome` | npm (latest) | Fast formatter/linter |
 | `uv` | PyPI (via pipx) | Python package manager |
 | `pipenv` | PyPI (via uv tool) | Python dependency manager |

@@ -5,7 +5,7 @@
 ## Introduction
 This repository provides a container setup for running OpenCode in a relaxed, "safe-vibe" development environment. It ensures a reproducible workspace while protecting your host system and keeping dependencies isolated.
 
-The image is based on `node:26` for a minimal footprint. Developer tools (opencode-ai, Biome, playwright-cli, uv, pipenv, ruff, ralph-loop, gitsem, o2cfg) are installed at first container start and persisted in the `/home/opencode` named volume, so subsequent starts are fast.
+The image is based on `node:26` for a minimal footprint. Developer tools (@opencode/cli, Biome, playwright-cli, uv, pipenv, ruff, ralph-loop, gitsem, o2cfg) are installed at first container start and persisted in the `/home/opencode` named volume, so subsequent starts are fast.
 
 ## Prerequisites
 - Podman (rootless recommended). Minimum tested: Podman 4.x.
@@ -83,7 +83,7 @@ source ~/.bashrc
 
 ### Upgrading software
 
-Pass `upgrade` as the first argument to force-reinstall all managed packages (opencode-ai, Biome, playwright-cli, uv, pipenv, ruff, ralph-loop, gitsem, o2cfg). The container exits after the upgrade is complete.
+Pass `upgrade` as the first argument to force-reinstall all managed packages (@opencode/cli, Biome, playwright-cli, uv, pipenv, ruff, ralph-loop, gitsem, o2cfg). The container exits after the upgrade is complete.
 
 ```bash
 podman run --rm --userns=keep-id -ti \
