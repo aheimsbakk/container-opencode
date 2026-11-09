@@ -13,3 +13,8 @@ The managed npm package in `container-init.sh` changed from `opencode-ai` to
 ship an `opencode` bin, so the image `CMD ["opencode"]` contract is unchanged.
 Old volumes keep a stale `opencode-ai` install; remove with
 `npm rm opencode-ai` in `/home/opencode` or recreate the volume.
+
+**Update (2026-11-09):** `@opencode/cli` 2.x now ships two bin names,
+`opencode` and `opencode2`. The image `CMD` and the `ocw` web-mode alias use
+`opencode2` (with the `serve` subcommand replacing `web`), so the earlier
+"bin contract unchanged" note no longer applies.

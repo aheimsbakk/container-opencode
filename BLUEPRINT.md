@@ -31,7 +31,7 @@ Container Image (node:26)
 │   └── Shell launch (exec bash -l or exec bash -l -c "$*")
 └── Entrypoint / CMD
     ├── ENTRYPOINT: tini → container-init.sh
-    └── CMD: opencode (default shell if no argument)
+    └── CMD: opencode2 (default command if no argument)
 ```
 
 ## Data Flow
@@ -95,7 +95,7 @@ When `$1 == "upgrade"`, the init script forces reinstallation of all managed pac
 
 ```
 ENTRYPOINT ["/usr/bin/tini", "--", "/container-init.sh"]
-CMD ["opencode"]
+CMD ["opencode2"]
 ```
 
 ### Build-Time Variables (ENV in Containerfile)
@@ -158,4 +158,5 @@ CMD ["opencode"]
 - Rootless Podman with `--userns=keep-id` maps container UID to host UID.
 - Dependencies are isolated in the container; no global host modifications.
 - Host directory mounts are advisory — users may add `:ro` for read-only workspace mounts.
+- On SELinux hosts, mount bind paths with the `:z` label (documented in the `README.md` aliases) so Podman can relabel shared content.
 - Sensitive state (git credentials) is managed via explicit bind mounts or environment variables.

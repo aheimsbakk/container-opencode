@@ -90,12 +90,11 @@
 
 | File | Blueprint Component |
 | :--- | :--- |
-| `opencode.json` | OpenCode agent config (formatter, LSP, snapshot, instructions) |
+| `opencode.json` | OpenCode agent config (formatter, snapshot, instructions) |
 
 **Key settings:**
 - `autoupdate: false` — Update notification disabled
 - `formatter: true` — Enable formatting
-- `lsp: true` — Enable language server protocol
 - `share: "manual"` — Manual share mode
 - `snapshot: true` — Enable snapshots
 - `instructions: [".opencode/RULES.md", "AGENTS.md"]` — Rule file references
@@ -118,7 +117,7 @@
 | :--- | :--- | :--- |
 | Image build | `Containerfile` (root) | `podman build -t opencode:latest .` |
 | Container PID 1 | `/container-init.sh` (inside image) | Init script invoked by tini |
-| Default command | `opencode` (npm package) | OpenCode agent CLI (launched by init or CMD) |
+| Default command | `opencode2` (npm bin) | OpenCode agent CLI v2 bin from `@opencode/cli` (launched by init or CMD) |
 | Interactive shell | `bash -l` (inside container) | Default when no argument given |
 | Config | `opencode.json` (root) | OpenCode agent runtime configuration |
 | Rules | `.opencode/RULES.md` | Project rules loaded by opencode.json |
@@ -155,7 +154,7 @@ podman run --rm --userns=keep-id -ti --shm-size=2gb \
   -v opencode:/home/opencode \
   -v "$PWD":/work \
   -v "$HOME"/.gitconfig:/home/opencode/.gitconfig \
-  opencode:latest opencode web --hostname 0.0.0.0
+  opencode:latest opencode2 serve --hostname 0.0.0.0
 ```
 
 ### Upgrade
