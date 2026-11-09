@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.6.0] - 2026-11-09
+
+- **why:** Run the new `opencode2` binary and label Podman mounts so the container works on SELinux hosts
+- **model:** kompis/qwen3.8-flash-next-iq3_s
+- **tags:** container, selinux, cli, config
+
+### Added
+
+- Add SELinux mount labels (`:z`, `:ro,z`) to the `oc` and `ocw` Podman aliases (`README.md`)
+- Clean up the `sed` backup file after alias setup (`sed -i.bak` plus `rm -f ~/.bashrc.bak`) (`README.md`)
+
+### Changed
+
+- Change the default `CMD` from `opencode` to `opencode2` (`Containerfile`); `@opencode/cli` 2.x ships both bin names
+- Switch the web-mode alias from `opencode web` to `opencode2 serve` (`README.md`)
+- Sync the CMD contract in `BLUEPRINT.md` and the mapping tables in `CODEBASE.md`
+- Note the binary name change in `docs/memory/archive/2026-11-06-opencode-package-switch.md`
+
+### Removed
+
+- Drop the `lsp: true` setting from `opencode.json`
+
 ## [0.5.0] - 2026-11-06
 
 - **why:** Install the current `@opencode/cli` package instead of the legacy `opencode-ai` name
