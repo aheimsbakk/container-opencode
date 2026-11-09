@@ -13,7 +13,6 @@
   //},
   "autoupdate": false,
   "formatter": true,
-  "lsp": true,
   "share": "manual",
   "snapshot": true
 }

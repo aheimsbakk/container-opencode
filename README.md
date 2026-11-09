@@ -59,10 +59,11 @@ podman run --rm --userns=keep-id -ti --shm-size=2gb \
 Setup aliases (replace if changed)
 
 ```bash
-OC="alias oc='podman run --hostname vibe --name opencode --rm --userns=keep-id -ti --shm-size=2gb -v opencode:/home/opencode -v \"\$PWD\":/work -v \"\$HOME\"/.gitconfig:/home/opencode/.gitconfig opencode:latest'"
-OCW="alias ocw='podman run --hostname vibe --name opencode --rm --userns=keep-id -ti --shm-size=2gb -p 4096:4096 -v opencode:/home/opencode -v \"\$PWD\":/work -v \"\$HOME\"/.gitconfig:/home/opencode/.gitconfig opencode:latest opencode web --hostname 0.0.0.0'"
-grep -q "^alias oc=" ~/.bashrc && sed -i "s|^alias oc=.*|$OC|" ~/.bashrc || echo "$OC" >> ~/.bashrc
-grep -q "^alias ocw=" ~/.bashrc && sed -i "s|^alias ocw=.*|$OCW|" ~/.bashrc || echo "$OCW" >> ~/.bashrc
+OC="alias oc='podman run --hostname vibe --name opencode --rm --userns=keep-id -ti --shm-size=2gb -v opencode:/home/opencode:z -v \"\$PWD\":/work:z -v \"\$HOME\"/.gitconfig:/home/opencode/.gitconfig:ro,z opencode:latest'"
+OCW="alias ocw='podman run --hostname vibe --name opencode --rm --userns=keep-id -ti --shm-size=2gb -p 4096:4096 -v opencode:/home/opencode:z -v \"\$PWD\":/work:z -v \"\$HOME\"/.gitconfig:/home/opencode/.gitconfig:ro,z opencode:latest opencode2 serve --hostname 0.0.0.0'"
+grep -q "^alias oc=" ~/.bashrc && sed -i.bak "s|^alias oc=.*|$OC|" ~/.bashrc || echo "$OC" >> ~/.bashrc
+grep -q "^alias ocw=" ~/.bashrc && sed -i.bak "s|^alias ocw=.*|$OCW|" ~/.bashrc || echo "$OCW" >> ~/.bashrc
+rm -f ~/.bashrc.bak
 source ~/.bashrc
 ```
 
@@ -75,7 +76,7 @@ source ~/.bashrc
 | `--hostname vibe` | Sets the container hostname to `vibe`. |
 | `--name opencode` | Assigns the name `opencode` to the container instance. |
 | `--shm-size=2gb` | Increases shared memory size (required for stable browser automation). |
-| `-p 4096:4096` | Maps host port 4096 to container port 4096 (used for opencode web mode). |
+| `-p 4096:4096` | Maps host port 4096 to container port 4096 (used for `opencode2 serve` mode). |
 | `-v opencode:/home...` | Persist OpenCode home data in a named volume between sessions. |
 | `-v "$PWD":/work` | Mount current directory to `/work` so edits are visible on the host. |
 | `-v .../.gitconfig` | Share host git configuration (identity/settings) with the container. |

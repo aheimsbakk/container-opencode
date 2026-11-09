@@ -105,4 +105,4 @@ ENV HOME=/home/opencode
 
 # Execute shell as default
 ENTRYPOINT ["/usr/bin/tini", "--", "/container-init.sh"]
-CMD ["opencode"]
+CMD ["opencode2"]
