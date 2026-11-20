@@ -105,6 +105,11 @@ ADD container-init.sh /
 WORKDIR /work
 VOLUME ["/work", "/home/opencode"]
 
+# Point the passwd entry at the mounted home directory. OpenSSH resolves ~ via
+# getpwuid() instead of the HOME variable, so ssh-keygen, ssh, and ssh-agent
+# would otherwise read and write keys under the image's /home/node.
+RUN usermod --home /home/opencode node
+
 # Set home to opencode
 ENV HOME=/home/opencode
 
