@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.7.0] - 2026-11-20
+
+- **why:** Give the container access to the user libvirt session and add the tools to manage VMs
+- **model:** github-copilot/claude-haiku-5.5
+- **tags:** container, libvirt, apt, alias, docs
+
+### Added
+
+- Add `libvirt-clients`, `python3-libvirt`, `python3-lxml`, `qemu-utils`, and `virtinst` to the APT install list (`Containerfile`)
+- Add the `ocl` alias that mounts the host libvirt user session socket and sets `XDG_RUNTIME_DIR` (`README.md`)
+- Add the "Shared libvirt session" guide with setup steps and access warnings (`README.md`)
+
+### Changed
+
+- Document the libvirt socket mount, `XDG_RUNTIME_DIR` variable, and host session requirement in `BLUEPRINT.md` and `CODEBASE.md`
+
 ## [0.6.0] - 2026-11-09
 
 - **why:** Run the new `opencode2` binary and label Podman mounts so the container works on SELinux hosts
