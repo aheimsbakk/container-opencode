@@ -193,6 +193,11 @@ podman run --rm --userns=keep-id -ti \
 | o2cfg | uv tool (git) | `container-init.sh` line 60 | unpinned git URL |
 | tini | Init process | APT package | Debian stable repo |
 | pipx | Python package installer | APT package | Debian stable repo |
+| libvirt-clients | Virtualization CLI (`virsh`) | APT package (`Containerfile`) | Debian stable repo |
+| python3-libvirt | Python libvirt bindings | APT package (`Containerfile`) | Debian stable repo |
+| python3-lxml | Python XML library | APT package (`Containerfile`) | Debian stable repo |
+| qemu-utils | Disk image tools (`qemu-img`) | APT package (`Containerfile`) | Debian stable repo |
+| virtinst | VM install tools (`virt-install`) | APT package (`Containerfile`) | Debian stable repo |
 
 ## Volume Map
 
@@ -201,3 +206,4 @@ podman run --rm --userns=keep-id -ti \
 | `opencode` (named) | `/home/opencode` | Yes | npm local packages, pipx binaries, configs |
 | `$PWD` (bind) | `/work` | No | Host workspace directory |
 | `~/.gitconfig` (bind) | `/home/opencode/.gitconfig` | No | Host Git identity |
+| `/run/user/<uid>/libvirt` (bind) | `/run/user/<uid>/libvirt` | No | Host libvirt user session socket (optional, `ocl` alias) |

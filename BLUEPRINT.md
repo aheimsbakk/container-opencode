@@ -16,7 +16,7 @@ Provide an isolated, reproducible development environment for the OpenCode agent
 Container Image (node:26)
 ├── Base OS Layer
 │   ├── Node.js 26 (Debian-based)
-│   └── APT packages (bash-completion, bat, bc, ca-certificates, curl, dnsutils, entr, fd-find, file, gawk, gcc, git, gnupg, golang, govulncheck, iproute2, iputils-ping, jq, less, libc6-dev, locales, lsof, man-db, nano, netcat-traditional, openscad, parallel, pipx, procps, ripgrep, rsync, shellcheck, shfmt, sqlite3, strace, tini, tree, unzip, vim, xauth, xvfb, xxd, yq, zip, Playwright deps)
+│   └── APT packages (bash-completion, bat, bc, ca-certificates, curl, dnsutils, entr, fd-find, file, gawk, gcc, git, gnupg, golang, govulncheck, iproute2, iputils-ping, jq, less, libc6-dev, libvirt-clients, locales, lsof, man-db, nano, netcat-traditional, openscad, parallel, pipx, procps, python3-libvirt, python3-lxml, qemu-utils, ripgrep, rsync, shellcheck, shfmt, sqlite3, strace, tini, tree, unzip, vim, virtinst, xauth, xvfb, xxd, yq, zip, Playwright deps)
 ├── Environment Configuration
 │   ├── ENV variables (UV_VERSION, DEBIAN_FRONTEND, LANG, LC_ALL, HOME, PATH, TERM, EDITOR, CGO_ENABLED)
 │   ├── Locale setup (nb_NO.UTF-8, en_US.UTF-8)
@@ -54,6 +54,8 @@ Podman Run
     ├── Named volume: opencode → /home/opencode (persists across runs)
     ├── Bind mount: $PWD → /work (host workspace)
     ├── Optional bind mount: ~/.gitconfig → /home/opencode/.gitconfig
+    ├── Optional bind mount: /run/user/<uid>/libvirt → /run/user/<uid>/libvirt
+    ├── Optional ENV: XDG_RUNTIME_DIR=/run/user/<uid>
     └── Optional ENV: OPENCODE_ENABLE_EXA=1
     │
     ▼
@@ -120,6 +122,7 @@ CMD ["opencode2"]
 | `/home/opencode` | Named volume `opencode` | Yes (across runs) |
 | `/work` | `$PWD` (bind mount) | No (host-driven) |
 | `/home/opencode/.gitconfig` | `~/.gitconfig` (bind mount) | No (host file) |
+| `/run/user/<uid>/libvirt` | Host user libvirt session socket directory (bind mount) | No (host-driven) |
 
 ## Persistence
 
@@ -143,6 +146,8 @@ CMD ["opencode2"]
 | `o2cfg` | GitHub (via uv tool) | Custom tool |
 | `@playwright/cli` | npm (latest) | Browser automation CLI (playwright-cli) |
 | `@playwright/mcp` | npm (latest) | Browser automation via MCP (config commented out in `opencode.json`, disabled) |
+| libvirt user session (`qemu:///session`) | Host libvirt daemon, shared through the socket bind mount | Optional VM control from inside the container |
+| `libvirt-clients`, `python3-libvirt`, `python3-lxml`, `qemu-utils`, `virtinst` | APT | Virtualization CLI, Python bindings, and disk tools in the image |
 
 ## Error Boundaries
 
@@ -152,6 +157,7 @@ CMD ["opencode2"]
 - Upgrade mode exits with code 1 to distinguish from normal operation.
 - `tini` handles SIGINT/SIGTERM forwarding; no custom signal traps needed.
 - Volume data from `debian:stable-slim` base image is incompatible with `node:26`; users must recreate the volume.
+- The libvirt socket exists only while a host `virsh` session is open. With no open session, libvirt commands in the container fail until the host session starts again.
 
 ## Security Model
 
@@ -160,3 +166,4 @@ CMD ["opencode2"]
 - Host directory mounts are advisory — users may add `:ro` for read-only workspace mounts.
 - On SELinux hosts, mount bind paths with the `:z` label (documented in the `README.md` aliases) so Podman can relabel shared content.
 - Sensitive state (git credentials) is managed via explicit bind mounts or environment variables.
+- The libvirt socket mount lets the container create, start, stop, and delete the user's session VMs and read their disk images. Mount it only when the task needs VM access.
