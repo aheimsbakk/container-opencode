@@ -95,6 +95,7 @@ Give the container access to your user libvirt session (`qemu:///session`) over 
 - An SSH server on the host, reachable from the container as `host.containers.internal` on port 22.
 - A key pair in `/home/opencode/.ssh` inside the container, with the public key in `~/.ssh/authorized_keys` on the host. libvirt runs `ssh` with `BatchMode=yes`, so password prompts and passphrases cannot be answered.
 - A remote netcat with Unix-socket support (`nc -U`) on the host — `netcat-openbsd` on Debian/Ubuntu, `nmap-ncat` on Fedora. libvirt tunnels the libvirt socket through `ssh host nc -U <socket>`.
+- `virt-ssh-helper` on the host, if you restrict the key to libvirt traffic (step 2) — shipped by `libvirt-daemon-common` on Fedora, Debian, and Ubuntu.
 
 1. In the container, create a key (persisted in the `opencode` volume):
 
@@ -103,13 +104,15 @@ Give the container access to your user libvirt session (`qemu:///session`) over 
    cat ~/.ssh/id_ed25519.pub
    ```
 
-2. From a host terminal, append the printed key to `~/.ssh/authorized_keys` for the host user that runs `podman` (the alias passes the host's `$USER`). Then check the login from inside the container, substituting your host user name for `<host-user>` — `$USER` is unset inside the container:
+2. From a host terminal, append the printed key to `~/.ssh/authorized_keys` for the host user that runs `podman` (the alias passes the host's `$USER`). Restrict the key to libvirt traffic by adding options before the key type. On Fedora the line looks like this (key body replaced with a placeholder):
 
-   ```bash
-   ssh -o BatchMode=yes <host-user>@host.containers.internal true && echo ok
+   ```text
+   restrict,command="/usr/bin/virt-ssh-helper qemu:///session" ssh-ed25519 AAAA...<key from step 1>
    ```
 
-3. Verify libvirt access:
+   `command=` forces every connection with this key to run libvirt's socket proxy against `qemu:///session`, whatever the container asks for. `restrict` blocks the pseudo-terminal, agent, and port forwarding. Without these options, the key grants a full shell on the host. Confirm the helper path on your host with `command -v virt-ssh-helper` before pasting the line.
+
+3. Verify the setup from inside the container. Because the forced command replaces any requested command, plain `ssh <host-user>@host.containers.internal` no longer opens a shell — that is the intended restriction. Test through libvirt instead:
 
    ```bash
    virsh list --all

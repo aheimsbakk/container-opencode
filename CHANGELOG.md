@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.7.2] - 2026-11-20
+
+- **why:** Stop the container libvirt SSH key from granting a full host shell if leaked
+- **model:** kompis/qwen3.8-flash-next-iq3_s
+- **tags:** docs, security, ssh, libvirt
+
+### Added
+
+- Require the `ocl` authorized_keys entry to carry `restrict,command="/usr/bin/virt-ssh-helper qemu:///session"`, with a masked Fedora example (`README.md`)
+- List `virt-ssh-helper` (`libvirt-daemon-common`) as a prerequisite for the restricted key (`README.md`)
+
+### Changed
+
+- Replace the plain `ssh ... true` login check with `virsh list --all`; the forced command blocks a shell by design (`README.md`)
+
 ## [0.7.1] - 2026-11-20
 
 - **why:** Reach the host libvirt session over SSH and make OpenSSH use the container home directory
