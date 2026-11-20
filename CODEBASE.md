@@ -62,6 +62,7 @@
 - `ADD container-init.sh /` → Init script baked into image
 - `WORKDIR /work` → Working directory
 - `VOLUME ["/work", "/home/opencode"]` → Volume declarations
+- `RUN usermod --home /home/opencode node` → Aligns the passwd home with `HOME` (OpenSSH resolves `~` via `getpwuid()`)
 - `ENV HOME=/home/opencode` → Home directory (set after WORKDIR)
 - `ENTRYPOINT` / `CMD` → Entrypoint contract
 
@@ -206,4 +207,3 @@ podman run --rm --userns=keep-id -ti \
 | `opencode` (named) | `/home/opencode` | Yes | npm local packages, pipx binaries, configs |
 | `$PWD` (bind) | `/work` | No | Host workspace directory |
 | `~/.gitconfig` (bind) | `/home/opencode/.gitconfig` | No | Host Git identity |
-| `/run/user/<uid>/libvirt` (bind) | `/run/user/<uid>/libvirt` | No | Host libvirt user session socket (optional, `ocl` alias) |

@@ -54,8 +54,7 @@ Podman Run
     ├── Named volume: opencode → /home/opencode (persists across runs)
     ├── Bind mount: $PWD → /work (host workspace)
     ├── Optional bind mount: ~/.gitconfig → /home/opencode/.gitconfig
-    ├── Optional bind mount: /run/user/<uid>/libvirt → /run/user/<uid>/libvirt
-    ├── Optional ENV: XDG_RUNTIME_DIR=/run/user/<uid>
+    ├── Optional ENV: LIBVIRT_DEFAULT_URI=qemu+ssh://<user>@host.containers.internal/session
     └── Optional ENV: OPENCODE_ENABLE_EXA=1
     │
     ▼
@@ -122,11 +121,11 @@ CMD ["opencode2"]
 | `/home/opencode` | Named volume `opencode` | Yes (across runs) |
 | `/work` | `$PWD` (bind mount) | No (host-driven) |
 | `/home/opencode/.gitconfig` | `~/.gitconfig` (bind mount) | No (host file) |
-| `/run/user/<uid>/libvirt` | Host user libvirt session socket directory (bind mount) | No (host-driven) |
 
 ## Persistence
 
 - **Named volume** `opencode` at `/home/opencode` stores all installed toolchain state.
+- The `node` passwd entry is repointed to `/home/opencode` at build time, so tools that resolve `~` through `getpwuid()` (OpenSSH) agree with the `HOME` variable.
 - **Bind mount** `$PWD:/work` provides the live workspace.
 - No database or external service dependencies.
 - Locale data is generated at build time and baked into the image.
@@ -146,7 +145,7 @@ CMD ["opencode2"]
 | `o2cfg` | GitHub (via uv tool) | Custom tool |
 | `@playwright/cli` | npm (latest) | Browser automation CLI (playwright-cli) |
 | `@playwright/mcp` | npm (latest) | Browser automation via MCP (config commented out in `opencode.json`, disabled) |
-| libvirt user session (`qemu:///session`) | Host libvirt daemon, shared through the socket bind mount | Optional VM control from inside the container |
+| libvirt user session (`qemu:///session`) | Host libvirt session daemon, reached over SSH (`qemu+ssh`) | Optional VM control from inside the container |
 | `libvirt-clients`, `python3-libvirt`, `python3-lxml`, `qemu-utils`, `virtinst` | APT | Virtualization CLI, Python bindings, and disk tools in the image |
 
 ## Error Boundaries
@@ -157,7 +156,7 @@ CMD ["opencode2"]
 - Upgrade mode exits with code 1 to distinguish from normal operation.
 - `tini` handles SIGINT/SIGTERM forwarding; no custom signal traps needed.
 - Volume data from `debian:stable-slim` base image is incompatible with `node:26`; users must recreate the volume.
-- The libvirt socket exists only while a host `virsh` session is open. With no open session, libvirt commands in the container fail until the host session starts again.
+- The libvirt session is reached over SSH (`qemu+ssh`). If the host SSH server is unreachable, the key is not authorized, or `nc -U` is missing on the host, libvirt commands in the container fail; the host session daemon itself starts on demand.
 
 ## Security Model
 
@@ -166,4 +165,4 @@ CMD ["opencode2"]
 - Host directory mounts are advisory — users may add `:ro` for read-only workspace mounts.
 - On SELinux hosts, mount bind paths with the `:z` label (documented in the `README.md` aliases) so Podman can relabel shared content.
 - Sensitive state (git credentials) is managed via explicit bind mounts or environment variables.
-- The libvirt socket mount lets the container create, start, stop, and delete the user's session VMs and read their disk images. Mount it only when the task needs VM access.
+- The libvirt SSH transport gives the container the same VM control the host user has: it can create, start, stop, and delete session VMs and read their disk images. Use `oc` when the task does not need VM access.
