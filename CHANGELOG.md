@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.7.1] - 2026-11-20
+
+- **why:** Reach the host libvirt session over SSH and make OpenSSH use the container home directory
+- **model:** openrouter/deepseek-flash-latest
+- **tags:** container, libvirt, ssh, selinux, docs
+
+### Added
+
+- Add `LIBVIRT_DEFAULT_URI=qemu+ssh://$USER@host.containers.internal/session` to the `ocl` alias (`README.md`)
+- Add a bridged-networking note covering `qemu-bridge-helper` and `/etc/qemu/bridge.conf` (`README.md`)
+
+### Changed
+
+- Remove the `/run/user/<uid>/libvirt` bind mount and `XDG_RUNTIME_DIR` from the `ocl` alias; libvirt now connects over SSH (`README.md`, `BLUEPRINT.md`, `CODEBASE.md`)
+- Rewrite the "Shared libvirt session" guide around SSH key setup instead of a host session that must stay open (`README.md`)
+
+### Fixed
+
+- Point the `node` passwd entry at `/home/opencode`, so `ssh-keygen`, `ssh`, and `ssh-agent` stop writing to `/home/node` (`Containerfile`)
+
 ## [0.7.0] - 2026-11-20
 
 - **why:** Give the container access to the user libvirt session and add the tools to manage VMs
