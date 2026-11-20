@@ -42,6 +42,7 @@ RUN apt-get update && \
       jq \
       less \
       libc6-dev \
+      libvirt-clients \
       locales \
       lsof \
       man-db \
@@ -51,6 +52,9 @@ RUN apt-get update && \
       parallel \
       pipx \
       procps \
+      python3-libvirt \
+      python3-lxml \
+      qemu-utils \
       ripgrep \
       rsync \
       shellcheck \
@@ -61,6 +65,7 @@ RUN apt-get update && \
       tree \
       unzip \
       vim \
+      virtinst \
       xauth \
       xvfb \
       xxd \

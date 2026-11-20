@@ -61,8 +61,10 @@ Setup aliases (replace if changed)
 ```bash
 OC="alias oc='podman run --hostname vibe --name opencode --rm --userns=keep-id -ti --shm-size=2gb -v opencode:/home/opencode:z -v \"\$PWD\":/work:z -v \"\$HOME\"/.gitconfig:/home/opencode/.gitconfig:ro,z opencode:latest'"
 OCW="alias ocw='podman run --hostname vibe --name opencode --rm --userns=keep-id -ti --shm-size=2gb -p 4096:4096 -v opencode:/home/opencode:z -v \"\$PWD\":/work:z -v \"\$HOME\"/.gitconfig:/home/opencode/.gitconfig:ro,z opencode:latest opencode2 serve --hostname 0.0.0.0'"
+OCL="alias ocl='podman run --hostname vibe --name opencode --rm --userns=keep-id -ti --shm-size=2gb -v opencode:/home/opencode -v \"\$PWD\":/work -v \"\$HOME\"/.gitconfig:/home/opencode/.gitconfig:ro -v /run/user/\$(id -u)/libvirt:/run/user/\$(id -u)/libvirt -e XDG_RUNTIME_DIR=/run/user/\$(id -u) opencode:latest'"
 grep -q "^alias oc=" ~/.bashrc && sed -i.bak "s|^alias oc=.*|$OC|" ~/.bashrc || echo "$OC" >> ~/.bashrc
 grep -q "^alias ocw=" ~/.bashrc && sed -i.bak "s|^alias ocw=.*|$OCW|" ~/.bashrc || echo "$OCW" >> ~/.bashrc
+grep -q "^alias ocl=" ~/.bashrc && sed -i.bak "s|^alias ocl=.*|$OCL|" ~/.bashrc || echo "$OCL" >> ~/.bashrc
 rm -f ~/.bashrc.bak
 source ~/.bashrc
 ```
@@ -81,6 +83,38 @@ source ~/.bashrc
 | `-v "$PWD":/work` | Mount current directory to `/work` so edits are visible on the host. |
 | `-v .../.gitconfig` | Share host git configuration (identity/settings) with the container. |
 | `-e OPENCODE_ENABLE_EXA=1` | Enables Exa web search tools within the container. |
+
+### Shared libvirt session
+
+Give the container access to your user libvirt session (`qemu:///session`).
+
+**Prerequisite:** `virsh` on the host (`libvirt-clients` on Debian/Ubuntu).
+
+**Keep a host `virsh` session open while you use `ocl`.** Without an open connection, the libvirt socket times out after 120 seconds and disappears.
+
+1. In a host terminal, start the session and leave it open:
+
+   ```bash
+   virsh -c qemu:///session
+   ```
+
+   Keep this terminal running. Type `quit` to stop the session.
+
+2. In a second host terminal, start the container:
+
+   ```bash
+   ocl
+   ```
+
+3. Inside the container, verify access:
+
+   ```bash
+   virsh -c qemu:///session list --all
+   ```
+
+> **Warning:** Stopping the host `virsh` session, or closing its terminal, removes the socket. Running containers lose libvirt access.
+
+> **Warning:** The container can create, start, stop, and delete your user session VMs and read their disk images. Use `oc` when you do not need this access.
 
 ### Upgrading software
 
