@@ -61,7 +61,7 @@ Setup aliases (replace if changed)
 ```bash
 OC="alias oc='podman run --hostname vibe --name opencode --rm --userns=keep-id -ti --shm-size=2gb -v opencode:/home/opencode:z -v \"\$PWD\":/work:z -v \"\$HOME\"/.gitconfig:/home/opencode/.gitconfig:ro,z opencode:latest'"
 OCW="alias ocw='podman run --hostname vibe --name opencode --rm --userns=keep-id -ti --shm-size=2gb -p 4096:4096 -v opencode:/home/opencode:z -v \"\$PWD\":/work:z -v \"\$HOME\"/.gitconfig:/home/opencode/.gitconfig:ro,z opencode:latest opencode2 serve --hostname 0.0.0.0'"
-OCL="alias ocl='podman run --hostname vibe --name opencode --rm --userns=keep-id -ti --shm-size=2gb -v opencode:/home/opencode -v \"\$PWD\":/work -v \"\$HOME\"/.gitconfig:/home/opencode/.gitconfig:ro -v /run/user/\$(id -u)/libvirt:/run/user/\$(id -u)/libvirt -e XDG_RUNTIME_DIR=/run/user/\$(id -u) opencode:latest'"
+OCL="alias ocl='podman run --hostname vibe --name opencode --rm --userns=keep-id -ti --shm-size=2gb -v opencode:/home/opencode:z -v \"\$PWD\":/work:z -v \"\$HOME\"/.gitconfig:/home/opencode/.gitconfig:ro,z -e LIBVIRT_DEFAULT_URI=qemu+ssh://\$USER@host.containers.internal/session opencode:latest'"
 grep -q "^alias oc=" ~/.bashrc && sed -i.bak "s|^alias oc=.*|$OC|" ~/.bashrc || echo "$OC" >> ~/.bashrc
 grep -q "^alias ocw=" ~/.bashrc && sed -i.bak "s|^alias ocw=.*|$OCW|" ~/.bashrc || echo "$OCW" >> ~/.bashrc
 grep -q "^alias ocl=" ~/.bashrc && sed -i.bak "s|^alias ocl=.*|$OCL|" ~/.bashrc || echo "$OCL" >> ~/.bashrc
@@ -83,38 +83,50 @@ source ~/.bashrc
 | `-v "$PWD":/work` | Mount current directory to `/work` so edits are visible on the host. |
 | `-v .../.gitconfig` | Share host git configuration (identity/settings) with the container. |
 | `-e OPENCODE_ENABLE_EXA=1` | Enables Exa web search tools within the container. |
+| `-e LIBVIRT_DEFAULT_URI=...` | Default libvirt URI for `virsh`; `ocl` points it at the host session daemon over SSH. |
 
 ### Shared libvirt session
 
-Give the container access to your user libvirt session (`qemu:///session`).
+Give the container access to your user libvirt session (`qemu:///session`) over SSH. The `ocl` alias sets `LIBVIRT_DEFAULT_URI`, so `virsh` inside the container reaches the host session daemon without a `-c` argument.
 
-**Prerequisite:** `virsh` on the host (`libvirt-clients` on Debian/Ubuntu).
+**Prerequisites:**
 
-**Keep a host `virsh` session open while you use `ocl`.** Without an open connection, the libvirt socket times out after 120 seconds and disappears.
+- `virsh` on the host (`libvirt-clients` on Debian/Ubuntu).
+- An SSH server on the host, reachable from the container as `host.containers.internal` on port 22.
+- A key pair in `/home/opencode/.ssh` inside the container, with the public key in `~/.ssh/authorized_keys` on the host. libvirt runs `ssh` with `BatchMode=yes`, so password prompts and passphrases cannot be answered.
+- A remote netcat with Unix-socket support (`nc -U`) on the host — `netcat-openbsd` on Debian/Ubuntu, `nmap-ncat` on Fedora. libvirt tunnels the libvirt socket through `ssh host nc -U <socket>`.
 
-1. In a host terminal, start the session and leave it open:
-
-   ```bash
-   virsh -c qemu:///session
-   ```
-
-   Keep this terminal running. Type `quit` to stop the session.
-
-2. In a second host terminal, start the container:
+1. In the container, create a key (persisted in the `opencode` volume):
 
    ```bash
-   ocl
+   ssh-keygen -t ed25519 -N '' -f ~/.ssh/id_ed25519
+   cat ~/.ssh/id_ed25519.pub
    ```
 
-3. Inside the container, verify access:
+2. From a host terminal, append the printed key to `~/.ssh/authorized_keys` for the host user that runs `podman` (the alias passes the host's `$USER`). Then check the login from inside the container, substituting your host user name for `<host-user>` — `$USER` is unset inside the container:
 
    ```bash
-   virsh -c qemu:///session list --all
+   ssh -o BatchMode=yes <host-user>@host.containers.internal true && echo ok
    ```
 
-> **Warning:** Stopping the host `virsh` session, or closing its terminal, removes the socket. Running containers lose libvirt access.
+3. Verify libvirt access:
+
+   ```bash
+   virsh list --all
+   ```
+
+The SSH connection starts the host session daemon on demand, so no host `virsh` session has to stay open. The alias expands `$USER` in the host shell, so it follows the account that runs `podman`; override the URI if your SSH login name differs.
 
 > **Warning:** The container can create, start, stop, and delete your user session VMs and read their disk images. Use `oc` when you do not need this access.
+
+**Bridged networking:** session mode cannot create bridges, so it uses user-mode (slirp) networking unless an existing bridge is allowed. To attach a VM to a host bridge, whitelist it for QEMU's setuid helper on the host:
+
+```bash
+echo 'allow virbr0' | sudo tee /etc/qemu/bridge.conf
+sudo chmod u+s /usr/lib/qemu/qemu-bridge-helper   # /usr/libexec/qemu-bridge-helper on Fedora
+```
+
+Fedora ships the helper setuid with `allow virbr0` already in place. Debian and Ubuntu ship the helper in `qemu-system-common` without the setuid bit and without `/etc/qemu/bridge.conf`, so both lines above are needed there.
 
 ### Upgrading software
 
